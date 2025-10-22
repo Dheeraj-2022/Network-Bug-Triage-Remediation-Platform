@@ -1,0 +1,101 @@
+---
+# infra/provision.yml
+# Ansible playbook to provision all nodes for network-bug-triage.
+#
+# Tasks:
+# - Install OS packages (python3, pip, rdma-core)
+# - Create project directory and copy code (assumes you run ansible from repo root)
+# - Setup Python venv and install Python requirements
+# - Create triage user and place agent systemd unit
+#
+- name: Provision network-bug-triage nodes
+  hosts: all
+  become: yes
+  vars:
+    project_dir: /opt/network-bug-triage
+    venv_dir: /opt/network-bug-triage/venv
+    requirements_source: "{{ playbook_dir }}/../requirements.txt"
+  tasks:
+
+    - name: Ensure apt cache is up to date (Debian)
+      apt:
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Install common packages (Debian)
+      apt:
+        name:
+          - python3
+          - python3-venv
+          - python3-pip
+          - git
+          - iproute2
+          - net-tools
+          - tcpdump
+          - rdma-core
+          - build-essential
+        state: present
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Create project directory
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Sync repository files to remote (copy entire repo)
+      synchronize:
+        src: "{{ playbook_dir }}/.."
+        dest: "{{ project_dir }}"
+        rsync_opts:
+          - "--exclude=.git"
+          - "--exclude=venv"
+      delegate_to: localhost
+      ignore_errors: yes
+
+    - name: Create Python virtualenv
+      command: python3 -m venv "{{ venv_dir }}"
+      args:
+        creates: "{{ venv_dir }}/bin/activate"
+
+    - name: Install pip requirements into venv
+      command: "{{ venv_dir }}/bin/pip install -r {{ project_dir }}/requirements.txt"
+      args:
+        warn: false
+
+    - name: Ensure triage user exists
+      user:
+        name: triage
+        shell: /bin/bash
+        create_home: yes
+        state: present
+
+    - name: Place agent systemd unit
+      copy:
+        dest: /etc/systemd/system/network-triage-agent.service
+        content: |
+          [Unit]
+          Description=Network Bug Triage Agent
+          After=network-online.target
+
+          [Service]
+          Type=simple
+          ExecStart={{ venv_dir }}/bin/python {{ project_dir }}/agent/agent.py --config {{ project_dir }}/agent/config.yaml
+          Restart=on-failure
+          User=root
+          WorkingDirectory={{ project_dir }}
+
+          [Install]
+          WantedBy=multi-user.target
+      notify:
+        - systemd-reload
+        - enable-agent
+
+  handlers:
+    - name: systemd-reload
+      command: systemctl daemon-reload
+
+    - name: enable-agent
+      command: systemctl enable --now network-triage-agent.service

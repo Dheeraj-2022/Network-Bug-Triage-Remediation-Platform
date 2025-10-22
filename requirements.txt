@@ -1,0 +1,24 @@
+# Core runtime
+psutil
+pyyaml
+kafka-python
+python-dateutil
+
+# eBPF (for packet sampling, optional)
+bcc
+
+# RDMA / soft-roce integration (optional, requires rdma-core libs)
+# pyverbs
+
+# Machine Learning
+numpy
+pandas
+scikit-learn
+xgboost
+joblib
+
+# NLP
+sentence-transformers       
+
+# Automation
+ansible

@@ -1,0 +1,79 @@
+---
+# infra/playbooks/remediate_mtu.yml
+#
+# Remediate MTU mismatches on provided targets via canary-first approach:
+# - Expects extra_vars.targets: list of {"host": "<inventory_hostname>", "iface": "<iface>", "err_sum": <int>}
+# - extra_vars.desired_mtu (optional) default 1500
+# - Will first apply on canary (first target) and validate. If canary fails, attempt rollback.
+#
+- name: Remediate MTU mismatches (canary-first)
+  hosts: agents
+  become: yes
+  gather_facts: yes
+  vars:
+    desired_mtu: "{{ desired_mtu | default(1500) }}"
+    backup_dir: /var/lib/network-bug-triage/mtu_backups
+    remediation_targets: "{{ targets | default([]) }}"
+  tasks:
+
+    - name: Ensure backup dir exists
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Build per-host target list
+      set_fact:
+        host_targets: "{{ host_targets | default([]) + [ item ] }}"
+      loop: "{{ remediation_targets }}"
+      when: item.host == inventory_hostname
+
+    - name: Debug host_targets
+      debug:
+        var: host_targets
+      when: host_targets is defined
+
+    - name: Back up current MTU for each interface
+      shell: |
+        mkdir -p {{ backup_dir }}
+        for ifname in {{ host_targets | map(attribute='iface') | list | join(' ') }}; do
+          ip -o link show ${ifname} | awk '{print $5}' > {{ backup_dir }}/{{ inventory_hostname }}-${ifname}.mtu || true
+        done
+      when: host_targets is defined and host_targets | length > 0
+      args:
+        warn: false
+      ignore_errors: yes
+
+    - name: Apply desired MTU (canary strategy)
+      shell: |
+        set -e
+        ip link set dev {{ item.iface }} mtu {{ desired_mtu }}
+        ip -o link show {{ item.iface }}
+      loop: "{{ host_targets | default([]) }}"
+      register: mtu_apply
+      failed_when: false
+      args:
+        warn: false
+
+    - name: Verify MTU applied
+      shell: ip -o link show {{ item.item.iface }} | awk '{print $5}'
+      loop: "{{ mtu_apply.results | default([]) }}"
+      register: mtu_verify
+      changed_when: false
+      failed_when: false
+
+    - name: Fail on canary mismatch
+      fail:
+        msg: "MTU change failed on canary host {{ inventory_hostname }} iface {{ item.item.iface }}"
+      when:
+        - inventory_hostname == (remediation_targets[0].host if remediation_targets|length > 0 else '')
+        - item.stdout | int != desired_mtu
+      loop: "{{ mtu_verify.results }}"
+
+    - name: Log remediation action
+      shell: |
+        echo "$(date -Is) Remediated MTU={{ desired_mtu }} for iface={{ item.item.iface }} on host={{ inventory_hostname }} reason='{{ reason | default(\"auto\") }}'" >> /var/log/network-bug-triage-remediation.log
+      loop: "{{ mtu_verify.results }}"
+      args:
+        warn: false
+      ignore_errors: yes

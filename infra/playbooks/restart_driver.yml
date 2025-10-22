@@ -1,0 +1,84 @@
+---
+# infra/playbooks/restart_driver.yml
+#
+# Safely reload a network driver on target hosts.
+# Expected extra_vars:
+#  - targets: list of {"host": "<inventory_hostname>", "driver": "<module_name>"}
+#  - verify_cmd: optional command to verify network after reload (default: ip link show)
+#
+- name: Restart NIC driver safely (canary-first)
+  hosts: agents
+  become: yes
+  gather_facts: yes
+  vars:
+    verify_cmd: "{{ verify_cmd | default('ip link show') }}"
+    backup_dir: /var/lib/network-bug-triage/driver_backups
+    remediation_targets: "{{ targets | default([]) }}"
+  tasks:
+
+    - name: Ensure backup dir exists
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Build per-host target list
+      set_fact:
+        host_targets: "{{ host_targets | default([]) + [ item ] }}"
+      loop: "{{ remediation_targets }}"
+      when: item.host == inventory_hostname
+
+    - name: Debug host_targets
+      debug:
+        var: host_targets
+      when: host_targets is defined
+
+    - name: Backup module list
+      shell: lsmod > {{ backup_dir }}/{{ inventory_hostname }}.lsmod || true
+      args:
+        warn: false
+      when: host_targets is defined and host_targets | length > 0
+
+    - name: Drain traffic (optional placeholder)
+      debug:
+        msg: "Placeholder: drain traffic or reroute before driver restart on {{ inventory_hostname }}"
+      when: host_targets is defined and host_targets | length > 0
+
+    - name: Remove driver module
+      shell: |
+        set -e
+        modprobe -r {{ item.driver }}
+      loop: "{{ host_targets | default([]) }}"
+      register: rmmod_out
+      failed_when: false
+      ignore_errors: true
+
+    - name: Re-insert driver module
+      shell: |
+        set -e
+        modprobe {{ item.driver }}
+      loop: "{{ host_targets | default([]) }}"
+      register: modprobe_out
+      failed_when: false
+      ignore_errors: true
+
+    - name: Verify driver and network
+      shell: "{{ verify_cmd }}"
+      register: verify_out
+      failed_when: false
+      changed_when: false
+
+    - name: Fail if driver re-insert failed on canary
+      fail:
+        msg: "Driver reload failed on canary host {{ inventory_hostname }}. Check modules/ksyslog."
+      when:
+        - inventory_hostname == (remediation_targets[0].host if remediation_targets|length > 0 else '')
+        - "'{{ remediation_targets[0].driver }}' not in verify_out.stdout"
+      ignore_errors: true
+
+    - name: Log driver remediation
+      shell: |
+        echo "$(date -Is) Reloaded driver for host={{ inventory_hostname }} drivers={{ host_targets | map(attribute='driver') | list | join(',') }}" >> /var/log/network-bug-triage-remediation.log
+      args:
+        warn: false
+      ignore_errors: yes

@@ -1,0 +1,33 @@
+# Agent configuration for network-bug-triage
+#
+# Notes:
+#  - You can override values with CLI args.
+#  - The agent runs as a service (systemd unit uses this path by default).
+#
+kafka:
+  bootstrap_servers:
+    - "localhost:9092"
+  topic: "telemetry.events"
+  # Optional kafka settings for kafka-python producer (kept simple here)
+  acks: "all"
+  retries: 5
+  linger_ms: 100
+
+collect:
+  interval_sec: 5          # main collection loop interval (seconds)
+  dmesg_tail_lines: 20     # how many dmesg lines to include per event
+  sample_packets: 2        # number of sample packet records to include
+  enable_ebpf: false       # if true, try to enable bcc eBPF sampling (optional)
+  enable_rdma: true        # try to read RDMA counters via `rdma` CLI if available
+
+agent:
+  host_id: null            # optional fixed host id; if null uses socket.gethostname()
+  dry_run: false           # set true for printing events instead of sending to Kafka
+  buffering:
+    enabled: true
+    path: /var/lib/network-bug-triage/agent-queue.jsonl  # local event queue file
+    max_pending: 10000
+
+logging:
+  level: INFO
+  file: /var/log/network-bug-triage-agent.log

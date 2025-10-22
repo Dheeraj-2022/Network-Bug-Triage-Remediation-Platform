@@ -1,0 +1,79 @@
+---
+# infra/playbooks/collect_forensics.yml
+#
+# Collect forensic artifacts from target hosts for offline inspection.
+# - dmesg tail
+# - system logs (/var/log/syslog or journalctl)
+# - rdma counters (if rdma-core installed)
+# - ip link / ip -s link
+# - optional tcpdump capture for a short duration (requires tcpdump installed)
+#
+- name: Collect forensic artifacts
+  hosts: agents
+  become: yes
+  gather_facts: yes
+  vars:
+    forensic_dir: /var/log/network-bug-triage/forensics
+    tcpdump_duration: "{{ tcpdump_duration | default(10) }}"  # seconds; 0 or not set to skip
+    tcpdump_iface: "{{ tcpdump_iface | default('eth0') }}"
+  tasks:
+    - name: Ensure forensic dir exists
+      file:
+        path: "{{ forensic_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Collect dmesg tail
+      shell: dmesg --time-format iso | tail -n 200 > {{ forensic_dir }}/dmesg_{{ inventory_hostname }}.log
+      args:
+        warn: false
+
+    - name: Collect journal (if systemd)
+      shell: journalctl -n 500 --no-pager > {{ forensic_dir }}/journal_{{ inventory_hostname }}.log
+      when: ansible_service_mgr == "systemd"
+      args:
+        warn: false
+      ignore_errors: yes
+
+    - name: Collect /var/log/syslog (Debian/Ubuntu)
+      shell: tail -n 500 /var/log/syslog > {{ forensic_dir }}/syslog_{{ inventory_hostname }}.log
+      when: ansible_facts['os_family'] == 'Debian'
+      args:
+        warn: false
+      ignore_errors: yes
+
+    - name: Collect ip link and statistics
+      shell: ip -s link show > {{ forensic_dir }}/ip_link_{{ inventory_hostname }}.log
+      args:
+        warn: false
+
+    - name: Collect RDMA counters (if available)
+      shell: |
+        if command -v rdma >/dev/null 2>&1; then
+          rdma link show > {{ forensic_dir }}/rdma_link_{{ inventory_hostname }}.log || true
+          rdma dev show > {{ forensic_dir }}/rdma_dev_{{ inventory_hostname }}.log || true
+        else
+          echo "rdma not present" > {{ forensic_dir }}/rdma_link_{{ inventory_hostname }}.log
+        fi
+      args:
+        warn: false
+      ignore_errors: yes
+
+    - name: Optionally capture short pcap
+      shell: |
+        if [ "{{ tcpdump_duration | int }}" -gt 0 ]; then
+          timeout {{ tcpdump_duration }} tcpdump -n -w {{ forensic_dir }}/capture_{{ inventory_hostname }}.pcap -i {{ tcpdump_iface }} 2>/dev/null || true
+        else
+          echo "skipping tcpdump" > /dev/null
+        fi
+      args:
+        warn: false
+      ignore_errors: yes
+
+    - name: Tar forensic artifacts per host
+      archive:
+        path: "{{ forensic_dir }}"
+        dest: "{{ forensic_dir }}/forensics_{{ inventory_hostname }}.tar.gz"
+        format: gz
+      args:
+        warn: false
