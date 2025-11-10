@@ -13,3 +13,7 @@ It integrates **network telemetry (kernel logs, NIC stats, RDMA counters)** with
 - **Infra**: Multi-VM setup with Vagrant/libvirt + Soft-RoCE for RDMA  
 - **ML/NLP**: XGBoost classifier + transformer-based log embeddings
 
+## 🏗️ System Architecture
+
+![Network Bug Triage & Remediation Platform Architecture](docs/network_bug_architecture.png)
+
