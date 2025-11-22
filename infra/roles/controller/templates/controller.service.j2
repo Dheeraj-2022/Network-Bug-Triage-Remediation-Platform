@@ -1,0 +1,14 @@
+﻿[Unit]
+Description=Network Bug Triage Controller
+After=network-online.target
+
+[Service]
+Type=simple
+Environment=PYTHONUNBUFFERED=1
+ExecStart={{ venv_dir }}/bin/python {{ project_dir }}/controller/processor.py {{ controller_args }}{% if kafka_bootstrap %} --kafka {{ kafka_bootstrap }}{% endif %}
+WorkingDirectory={{ project_dir }}
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target

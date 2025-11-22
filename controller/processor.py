@@ -61,7 +61,7 @@ def iso_now():
 class SlidingStore:
     """
     In-memory sliding window of recent events for correlation.
-    Not persistent — intended for quick correlation.
+    Not persistent - intended for quick correlation.
     """
     def __init__(self, max_events: int = 5000):
         self.events = deque(maxlen=max_events)
@@ -161,7 +161,7 @@ class Processor:
         audit_entry = {"ts": iso_now(), "playbook": playbook_name, "phase": "canary", "host": canary, "ok": ok}
         audit_log(audit_entry)
         if not ok:
-            LOG.error("Canary remediation failed on %s — attempting rollback (if rollback playbook exists)", canary)
+            LOG.error("Canary remediation failed on %s - attempting rollback (if rollback playbook exists)", canary)
             # attempt rollback playbook naming convention: rollback_<playbook_name>
             rb_playbook = os.path.join(PLAYBOOK_DIR, "rollback_" + playbook_name)
             if os.path.exists(rb_playbook):

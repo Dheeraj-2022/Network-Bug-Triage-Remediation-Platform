@@ -1,0 +1,12 @@
+﻿project_dir: /opt/network-bug-triage
+venv_dir: "{{ project_dir }}/venv"
+requirements_src: "{{ playbook_dir }}/../requirements.txt"
+repo_sync_excludes:
+  - .git
+  - venv
+  - __pycache__
+  - logs
+agent_service_name: network-triage-agent
+controller_service_name: network-triage-controller
+controller_args: "--dry-run"
+kafka_bootstrap: "localhost:9092"

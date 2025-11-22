@@ -25,9 +25,9 @@ agent:
   dry_run: false           # set true for printing events instead of sending to Kafka
   buffering:
     enabled: true
-    path: /var/lib/network-bug-triage/agent-queue.jsonl  # local event queue file
+    path: ./data/agent-queue.jsonl  # local event queue file
     max_pending: 10000
 
 logging:
   level: INFO
-  file: /var/log/network-bug-triage-agent.log
+  file: ./data/logs/agent.log  # null to disable file logging

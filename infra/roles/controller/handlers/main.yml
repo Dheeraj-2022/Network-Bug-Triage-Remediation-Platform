@@ -1,0 +1,9 @@
+﻿---
+- name: reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: restart controller service
+  ansible.builtin.systemd:
+    name: "{{ controller_service_name }}"
+    state: restarted

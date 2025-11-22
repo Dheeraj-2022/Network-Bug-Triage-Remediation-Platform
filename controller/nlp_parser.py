@@ -7,22 +7,37 @@ Uses transformer embeddings to analyze kernel/driver logs (dmesg).
 Generates vector embeddings and optional classification.
 
 Dependencies:
-- sentence-transformers
+- sentence-transformers (optional; falls back to zero-vector if missing)
 """
 
 from typing import List, Dict
-from sentence_transformers import SentenceTransformer
+import logging
 import numpy as np
+
+try:
+    from sentence_transformers import SentenceTransformer  # type: ignore
+except Exception:
+    SentenceTransformer = None
+
+LOG = logging.getLogger(__name__)
+
 
 class LogParser:
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
-        self.model = SentenceTransformer(model_name)
+        self.model = None
+        self.embedding_dim = 384  # default dim for MiniLM; overridden if model loads
+        if SentenceTransformer:
+            try:
+                self.model = SentenceTransformer(model_name)
+                self.embedding_dim = getattr(self.model, "get_sentence_embedding_dimension", lambda: self.embedding_dim)()
+            except Exception:
+                LOG.warning("Could not load SentenceTransformer model '%s'; continuing with zero-vector embeddings", model_name)
 
     def embed_logs(self, logs: str) -> np.ndarray:
         """Convert multi-line logs into a single embedding vector."""
         lines = [line for line in logs.splitlines() if line.strip()]
-        if not lines:
-            return np.zeros(384)
+        if not lines or self.model is None:
+            return np.zeros(self.embedding_dim, dtype=float)
         embeddings = self.model.encode(lines)
         return np.mean(embeddings, axis=0)
 
