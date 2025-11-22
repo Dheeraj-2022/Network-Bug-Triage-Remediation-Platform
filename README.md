@@ -13,6 +13,13 @@ It integrates **network telemetry (kernel logs, NIC stats, RDMA counters)** with
 - **Infra**: Multi-VM setup with Vagrant/libvirt + Soft-RoCE for RDMA  
 - **ML/NLP**: XGBoost classifier + transformer-based log embeddings
 
+<<<<<<< HEAD
 
 ## Ansible deploy
 See `docs/ansible.md` for running controller/agent roles with `ansible-playbook infra/site.yml`.
+=======
+## 🏗️ System Architecture
+
+![Network Bug Triage & Remediation Platform Architecture](docs/network_bug_architecture.png)
+
+>>>>>>> 2c33c6dd7b87911d1864b9294e93318319aa3aef
