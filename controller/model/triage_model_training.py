@@ -29,7 +29,7 @@ except Exception:
     embed_model = None
 
 # Paths
-ROOT = os.path.abspath(os.path.join(os.getcwd(), "..", ".."))
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 DATA_PATH = os.path.join(ROOT, "data", "sample_events.json")
 MODEL_PATH = os.path.join(ROOT, "controller", "models", "xgb_model.joblib")
 
@@ -79,21 +79,14 @@ def generate_synthetic_events(n=200):
     return events
 
 
-# Load or generate events
-if os.path.exists(DATA_PATH):
-    events = json.load(open(DATA_PATH))
-else:
-    events = generate_synthetic_events(300)
-    os.makedirs(os.path.dirname(DATA_PATH), exist_ok=True)
-    json.dump(events, open(DATA_PATH, "w"), indent=2)
-
-print(f"Loaded {len(events)} events.")
-
-
 # --------------------------
 # Feature Extraction
 # --------------------------
 def featurize(events):
+    if embed_model:
+        _embed = embed_model
+    else:
+        _embed = None
     X, y = [], []
     for ev in events:
         iface = ev["ifaces"]["eth0"]
@@ -106,8 +99,8 @@ def featurize(events):
             ev["rdma"]["qp_errors"],
         ]
         text = ev.get("dmesg_tail", "")
-        if embed_model:
-            emb = embed_model.encode([text])[0]
+        if _embed:
+            emb = _embed.encode([text])[0]
         else:
             emb = np.array([hash(text) % 100 / 100.0] * 16)
         feat = np.concatenate([np.array(feat), np.array(emb)])
@@ -116,30 +109,45 @@ def featurize(events):
     return np.vstack(X), np.array(y)
 
 
-X, y = featurize(events)
-print("Feature matrix shape:", X.shape, "Labels shape:", y.shape)
+def train_model():
+    """Train the XGBoost triage model. Returns a summary string."""
+    # Load or generate events
+    if os.path.exists(DATA_PATH):
+        with open(DATA_PATH) as f:
+            events = json.load(f)
+    else:
+        events = generate_synthetic_events(300)
+        os.makedirs(os.path.dirname(DATA_PATH), exist_ok=True)
+        with open(DATA_PATH, "w") as f:
+            json.dump(events, f, indent=2)
+
+    print(f"Loaded {len(events)} events.")
+
+    X, y = featurize(events)
+    print("Feature matrix shape:", X.shape, "Labels shape:", y.shape)
+
+    # Train
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    dtrain = xgb.DMatrix(X_train, label=y_train)
+    dtest = xgb.DMatrix(X_test, label=y_test)
+
+    params = {"objective": "binary:logistic", "eval_metric": "logloss"}
+    bst = xgb.train(params, dtrain, num_boost_round=50, evals=[(dtest, "test")], verbose_eval=False)
+
+    # Evaluate
+    preds = (bst.predict(dtest) > 0.5).astype(int)
+    report = classification_report(y_test, preds)
+    print("\nClassification Report:")
+    print(report)
+
+    # Save
+    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+    joblib.dump(bst, MODEL_PATH)
+    print("Saved model to", MODEL_PATH)
+
+    acc = (preds == y_test).mean()
+    return f"Accuracy={acc:.2%} on {len(X_test)} test samples. Model saved."
 
 
-# --------------------------
-# Train XGBoost Model
-# --------------------------
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-dtrain = xgb.DMatrix(X_train, label=y_train)
-dtest = xgb.DMatrix(X_test, label=y_test)
-
-params = {"objective": "binary:logistic", "eval_metric": "logloss"}
-bst = xgb.train(params, dtrain, num_boost_round=50, evals=[(dtest, "test")])
-
-# --------------------------
-# Evaluation
-# --------------------------
-preds = (bst.predict(dtest) > 0.5).astype(int)
-print("\nClassification Report:")
-print(classification_report(y_test, preds))
-
-# --------------------------
-# Save Model
-# --------------------------
-os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-joblib.dump(bst, MODEL_PATH)
-print("✅ Saved model to", MODEL_PATH)
+if __name__ == "__main__":
+    train_model()

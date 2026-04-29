@@ -3,6 +3,7 @@ psutil
 pyyaml
 kafka-python
 python-dateutil
+flask
 
 # eBPF (for packet sampling, optional)
 bcc

@@ -8,8 +8,8 @@
 #
 - name: Restart NIC driver safely (canary-first)
   hosts: agents
-  become: yes
-  gather_facts: yes
+  become: true
+  gather_facts: true
   vars:
     verify_cmd: "{{ verify_cmd | default('ip link show') }}"
     backup_dir: /var/lib/network-bug-triage/driver_backups
@@ -81,4 +81,4 @@
         echo "$(date -Is) Reloaded driver for host={{ inventory_hostname }} drivers={{ host_targets | map(attribute='driver') | list | join(',') }}" >> /var/log/network-bug-triage-remediation.log
       args:
         warn: false
-      ignore_errors: yes
+      ignore_errors: true

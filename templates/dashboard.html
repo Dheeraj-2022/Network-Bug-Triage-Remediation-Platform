@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Bug Triage &amp; Remediation Platform</title>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --card: #222533;
+            --border: #2e3245;
+            --primary: #6366f1;
+            --primary-hover: #818cf8;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        /* Header */
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary), #a78bfa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        header .status-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            display: inline-block;
+            margin-right: .5rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .4; }
+        }
+        /* Layout */
+        .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        /* KPI Cards row */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .kpi-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+        .kpi-card .label { font-size: .8rem; text-transform: uppercase; color: var(--muted); letter-spacing: .05em; }
+        .kpi-card .value { font-size: 2rem; font-weight: 700; margin-top: .25rem; }
+        .kpi-card.primary .value { color: var(--primary); }
+        .kpi-card.success .value { color: var(--success); }
+        .kpi-card.danger .value { color: var(--danger); }
+        .kpi-card.warning .value { color: var(--warning); }
+        /* Action buttons */
+        .actions {
+            display: flex; flex-wrap: wrap; gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
+        button, .btn {
+            border: none;
+            cursor: pointer;
+            padding: .65rem 1.25rem;
+            border-radius: 8px;
+            font-size: .875rem;
+            font-weight: 600;
+            transition: all .15s;
+            font-family: var(--font);
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: #16a34a; }
+        .btn-warning { background: var(--warning); color: #000; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-outline {
+            background: transparent; color: var(--muted);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover { color: var(--text); border-color: var(--muted); }
+        /* Tables / panels */
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .panel-body { padding: 0; overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .85rem;
+        }
+        th {
+            text-align: left;
+            padding: .75rem 1rem;
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: .75rem;
+            letter-spacing: .04em;
+            background: rgba(0,0,0,.15);
+        }
+        td {
+            padding: .6rem 1rem;
+            border-top: 1px solid var(--border);
+            vertical-align: top;
+        }
+        tr:hover td { background: rgba(99,102,241,.06); }
+        .badge {
+            display: inline-block;
+            padding: .15rem .55rem;
+            border-radius: 6px;
+            font-size: .75rem;
+            font-weight: 600;
+        }
+        .badge-remediate { background: rgba(239,68,68,.2); color: var(--danger); }
+        .badge-none { background: rgba(34,197,94,.15); color: var(--success); }
+        .badge-class { background: rgba(99,102,241,.2); color: var(--primary-hover); }
+        /* Toast / notification */
+        #toast {
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            background: var(--card); border: 1px solid var(--border);
+            padding: 1rem 1.5rem; border-radius: 10px;
+            font-size: .875rem; display: none; z-index: 999;
+            box-shadow: 0 8px 24px rgba(0,0,0,.4);
+        }
+        /* Loading spinner */
+        .spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid var(--muted); border-top-color: var(--primary);
+            border-radius: 50%; animation: spin .6s linear infinite;
+            vertical-align: middle; margin-right: .4rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state {
+            padding: 2rem; text-align: center; color: var(--muted);
+        }
+        /* Slider */
+        .slider-group { display: flex; align-items: center; gap: .5rem; }
+        .slider-group input[type=range] { accent-color: var(--primary); }
+        .slider-group label { font-size: .85rem; color: var(--muted); min-width: 90px; }
+        .slider-group .val { font-size: .85rem; font-weight: 600; min-width: 30px; }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Network Bug Triage &amp; Remediation Platform</h1>
+        <span><span class="status-dot"></span><span style="color:var(--muted);font-size:.85rem">System Online</span></span>
+    </header>
+
+    <div class="container">
+        <!-- KPI row -->
+        <div class="kpi-row">
+            <div class="kpi-card primary">
+                <div class="label">Total Events</div>
+                <div class="value" id="kpi-events">0</div>
+            </div>
+            <div class="kpi-card success">
+                <div class="label">Decisions Made</div>
+                <div class="value" id="kpi-decisions">0</div>
+            </div>
+            <div class="kpi-card danger">
+                <div class="label">Remediations</div>
+                <div class="value" id="kpi-remediations">0</div>
+            </div>
+            <div class="kpi-card warning">
+                <div class="label">ML Model</div>
+                <div class="value" id="kpi-model" style="font-size:1rem">--</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <div class="slider-group">
+                <label>Events to inject</label>
+                <input type="range" id="injectCount" min="1" max="20" value="5">
+                <span class="val" id="injectCountVal">5</span>
+            </div>
+            <button class="btn btn-primary" onclick="injectEvents()">Inject Synthetic Events</button>
+            <button class="btn btn-success" onclick="loadSampleEvents()">Load Sample Events</button>
+            <button class="btn btn-warning" onclick="trainModel()">Train ML Model</button>
+            <button class="btn btn-outline" onclick="refreshAll()">Refresh</button>
+            <button class="btn btn-danger" onclick="clearAll()">Clear All</button>
+        </div>
+
+        <!-- Triage Decisions -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>Triage Decisions</span>
+                <span style="color:var(--muted);font-size:.8rem" id="dec-count"></span>
+            </div>
+            <div class="panel-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Host</th>
+                            <th>Event ID</th>
+                            <th>Rule</th>
+                            <th>Log Class</th>
+                            <th>ML Score</th>
+                            <th>Action</th>
+                            <th>Playbook</th>
+                        </tr>
+                    </thead>
+                    <tbody id="decisions-body">
+                        <tr><td colspan="8" class="empty-state">No decisions yet. Inject events to begin.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Event Feed -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>Recent Events</span>
+                <span style="color:var(--muted);font-size:.8rem" id="evt-count"></span>
+            </div>
+            <div class="panel-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Host</th>
+                            <th>Event ID</th>
+                            <th>Iface Errors</th>
+                            <th>RDMA QP Err</th>
+                            <th>MTU</th>
+                            <th>Dmesg Snippet</th>
+                        </tr>
+                    </thead>
+                    <tbody id="events-body">
+                        <tr><td colspan="7" class="empty-state">No events yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Audit Log -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>Remediation Audit Log</span>
+                <span style="color:var(--muted);font-size:.8rem" id="audit-count"></span>
+            </div>
+            <div class="panel-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Host</th>
+                            <th>Event ID</th>
+                            <th>Playbook</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-body">
+                        <tr><td colspan="6" class="empty-state">No remediations logged.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        const $ = (s) => document.querySelector(s);
+        const slider = $('#injectCount');
+        const sliderVal = $('#injectCountVal');
+        slider.oninput = () => sliderVal.textContent = slider.value;
+
+        function showToast(msg, dur = 3000) {
+            const t = $('#toast');
+            t.innerHTML = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', dur);
+        }
+
+        function fmtTime(iso) {
+            if (!iso) return '--';
+            const d = new Date(iso);
+            return d.toLocaleTimeString();
+        }
+
+        function truncate(s, n = 40) {
+            if (!s) return '';
+            return s.length > n ? s.slice(0, n) + '...' : s;
+        }
+
+        /* ---- API calls ---- */
+        async function fetchJSON(url, opts) {
+            const r = await fetch(url, opts);
+            return r.json();
+        }
+
+        async function refreshStatus() {
+            const s = await fetchJSON('/api/status');
+            $('#kpi-events').textContent = s.total_events;
+            $('#kpi-decisions').textContent = s.total_decisions;
+            $('#kpi-remediations').textContent = s.remediations;
+            $('#kpi-model').textContent = s.model_trained ? 'Trained' : 'Not Trained';
+            $('#kpi-model').style.color = s.model_trained ? 'var(--success)' : 'var(--warning)';
+        }
+
+        async function refreshDecisions() {
+            const rows = await fetchJSON('/api/decisions');
+            const tbody = $('#decisions-body');
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No decisions yet. Inject events to begin.</td></tr>';
+                $('#dec-count').textContent = '';
+                return;
+            }
+            $('#dec-count').textContent = `Showing ${rows.length}`;
+            tbody.innerHTML = rows.reverse().map(d => `<tr>
+                <td>${fmtTime(d.ts)}</td>
+                <td>${d.host || '--'}</td>
+                <td style="font-family:monospace;font-size:.78rem">${truncate(d.event_id, 24)}</td>
+                <td><span class="badge ${d.rule_action === 'remediate' ? 'badge-remediate' : 'badge-none'}">${d.rule_action}</span></td>
+                <td><span class="badge badge-class">${d.log_class}</span></td>
+                <td>${d.ml_priority}</td>
+                <td>${d.remediate ? '<span class="badge badge-remediate">REMEDIATE</span>' : '<span class="badge badge-none">OK</span>'}</td>
+                <td>${d.playbook || '--'}</td>
+            </tr>`).join('');
+        }
+
+        async function refreshEvents() {
+            const rows = await fetchJSON('/api/events');
+            const tbody = $('#events-body');
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No events yet.</td></tr>';
+                $('#evt-count').textContent = '';
+                return;
+            }
+            $('#evt-count').textContent = `Showing ${rows.length}`;
+            tbody.innerHTML = rows.reverse().map(e => {
+                const eth0 = (e.ifaces || {}).eth0 || {};
+                const errs = (parseInt(eth0.errin||0) + parseInt(eth0.errout||0));
+                return `<tr>
+                    <td>${fmtTime(e.ts)}</td>
+                    <td>${e.host}</td>
+                    <td style="font-family:monospace;font-size:.78rem">${truncate(e.event_id, 24)}</td>
+                    <td style="color:${errs > 0 ? 'var(--danger)' : 'var(--success)'}">${errs}</td>
+                    <td style="color:${(e.rdma||{}).qp_errors > 0 ? 'var(--danger)' : 'var(--success)'}">${(e.rdma||{}).qp_errors || 0}</td>
+                    <td>${eth0.mtu || '--'}</td>
+                    <td>${truncate(e.dmesg_tail, 50)}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function refreshAudit() {
+            const rows = await fetchJSON('/api/audit');
+            const tbody = $('#audit-body');
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No remediations logged.</td></tr>';
+                $('#audit-count').textContent = '';
+                return;
+            }
+            $('#audit-count').textContent = `${rows.length} entries`;
+            tbody.innerHTML = rows.reverse().map(a => `<tr>
+                <td>${fmtTime(a.ts)}</td>
+                <td>${a.host || '--'}</td>
+                <td style="font-family:monospace;font-size:.78rem">${truncate(a.event_id, 24)}</td>
+                <td>${a.playbook || '--'}</td>
+                <td>${truncate(a.reason, 40)}</td>
+                <td>${a.status || '--'}</td>
+            </tr>`).join('');
+        }
+
+        async function refreshAll() {
+            await Promise.all([refreshStatus(), refreshDecisions(), refreshEvents(), refreshAudit()]);
+        }
+
+        async function injectEvents() {
+            showToast('<span class="spinner"></span> Injecting events...');
+            const count = parseInt(slider.value);
+            const data = await fetchJSON('/api/inject', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({count, inject_errors: true})
+            });
+            showToast(`Injected ${data.injected} events`);
+            refreshAll();
+        }
+
+        async function loadSampleEvents() {
+            showToast('<span class="spinner"></span> Loading sample events...');
+            const data = await fetchJSON('/api/load_sample_events', {method: 'POST'});
+            showToast(`Loaded ${data.loaded} sample events`);
+            refreshAll();
+        }
+
+        async function trainModel() {
+            showToast('<span class="spinner"></span> Training model... please wait', 15000);
+            const data = await fetchJSON('/api/train', {method: 'POST'});
+            if (data.ok) {
+                showToast('Model trained successfully!');
+            } else {
+                showToast('Training failed: ' + (data.error || 'unknown'), 5000);
+            }
+            refreshAll();
+        }
+
+        async function clearAll() {
+            await fetchJSON('/api/clear', {method: 'POST'});
+            showToast('All data cleared');
+            refreshAll();
+        }
+
+        // Initial load
+        refreshAll();
+        // Auto-refresh every 10s
+        setInterval(refreshAll, 10000);
+    </script>
+</body>
+</html>

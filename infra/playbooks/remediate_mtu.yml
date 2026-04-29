@@ -8,8 +8,8 @@
 #
 - name: Remediate MTU mismatches (canary-first)
   hosts: agents
-  become: yes
-  gather_facts: yes
+  become: true
+  gather_facts: true
   vars:
     desired_mtu: "{{ desired_mtu | default(1500) }}"
     backup_dir: /var/lib/network-bug-triage/mtu_backups
@@ -42,7 +42,7 @@
       when: host_targets is defined and host_targets | length > 0
       args:
         warn: false
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Apply desired MTU (canary strategy)
       shell: |
@@ -76,4 +76,4 @@
       loop: "{{ mtu_verify.results }}"
       args:
         warn: false
-      ignore_errors: yes
+      ignore_errors: true

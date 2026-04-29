@@ -51,8 +51,7 @@ try:
     from kafka import KafkaProducer
 except ImportError:
     KafkaProducer = None
-except Exception as e:
-    logger.warning("Failed to import KafkaProducer: %s", e)
+except Exception:
     KafkaProducer = None
 
 # Constants

@@ -10,8 +10,8 @@
 #
 - name: Collect forensic artifacts
   hosts: agents
-  become: yes
-  gather_facts: yes
+  become: true
+  gather_facts: true
   vars:
     forensic_dir: /var/log/network-bug-triage/forensics
     tcpdump_duration: "{{ tcpdump_duration | default(10) }}"  # seconds; 0 or not set to skip
@@ -33,14 +33,14 @@
       when: ansible_service_mgr == "systemd"
       args:
         warn: false
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Collect /var/log/syslog (Debian/Ubuntu)
       shell: tail -n 500 /var/log/syslog > {{ forensic_dir }}/syslog_{{ inventory_hostname }}.log
       when: ansible_facts['os_family'] == 'Debian'
       args:
         warn: false
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Collect ip link and statistics
       shell: ip -s link show > {{ forensic_dir }}/ip_link_{{ inventory_hostname }}.log
@@ -57,7 +57,7 @@
         fi
       args:
         warn: false
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Optionally capture short pcap
       shell: |
@@ -68,7 +68,7 @@
         fi
       args:
         warn: false
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Tar forensic artifacts per host
       archive:

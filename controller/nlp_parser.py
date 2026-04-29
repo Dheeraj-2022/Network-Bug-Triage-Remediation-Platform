@@ -29,7 +29,11 @@ class LogParser:
         if SentenceTransformer:
             try:
                 self.model = SentenceTransformer(model_name)
-                self.embedding_dim = getattr(self.model, "get_sentence_embedding_dimension", lambda: self.embedding_dim)()
+                # Use the newer method name if available, fall back to legacy
+                if hasattr(self.model, "get_embedding_dimension"):
+                    self.embedding_dim = self.model.get_embedding_dimension()
+                elif hasattr(self.model, "get_sentence_embedding_dimension"):
+                    self.embedding_dim = self.model.get_sentence_embedding_dimension()
             except Exception:
                 LOG.warning("Could not load SentenceTransformer model '%s'; continuing with zero-vector embeddings", model_name)
 

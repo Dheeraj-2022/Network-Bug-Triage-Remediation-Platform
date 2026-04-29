@@ -26,6 +26,7 @@ ENV/
 env/
 .env/
 .venv/
+myenv/
 
 # IDEs and Editors
 .idea/
@@ -55,3 +56,20 @@ Thumbs.db
 htmlcov/
 .pytest_cache/
 .tox/
+
+# ML model artifacts
+controller/models/*.joblib
+controller/models/*.pkl
+
+# Logs
+logs/
+*.log
+
+# Ansible retry files
+*.retry
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (keep sample, ignore generated)
+data/agent-queue.jsonl

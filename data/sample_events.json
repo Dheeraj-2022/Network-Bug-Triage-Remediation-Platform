@@ -1,0 +1,8702 @@
+[
+  {
+    "event_id": "evt-node1-1777441558-4121",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 657557,
+        "tx_bytes": 622696,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-7965",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 871812,
+        "tx_bytes": 642396,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-3723",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 800382,
+        "tx_bytes": 604354,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-3943",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 824170,
+        "tx_bytes": 542478,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-2349",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 895342,
+        "tx_bytes": 373985,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 5,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-9412",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 676260,
+        "tx_bytes": 957895,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-7128",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 496972,
+        "tx_bytes": 551272,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 5,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-9789",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 778252,
+        "tx_bytes": 88101,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-3269",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 103344,
+        "tx_bytes": 209279,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 4,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-2363",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 74425,
+        "tx_bytes": 691447,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-9488",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 983275,
+        "tx_bytes": 25040,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-6630",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 384951,
+        "tx_bytes": 475625,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-5940",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 990173,
+        "tx_bytes": 44881,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-2879",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 409561,
+        "tx_bytes": 588520,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-8291",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 113117,
+        "tx_bytes": 796350,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 5,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-7156",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 352525,
+        "tx_bytes": 732651,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-7315",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 938336,
+        "tx_bytes": 308440,
+        "errin": 0,
+        "errout": 6,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-8100",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 779987,
+        "tx_bytes": 24772,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-3238",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 196431,
+        "tx_bytes": 33762,
+        "errin": 0,
+        "errout": 15,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-4059",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 240934,
+        "tx_bytes": 873340,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-2439",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 335411,
+        "tx_bytes": 350368,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-8291",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 125411,
+        "tx_bytes": 857418,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-7019",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 508135,
+        "tx_bytes": 216980,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-6138",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 728060,
+        "tx_bytes": 236178,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-9872",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 825823,
+        "tx_bytes": 172149,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 3,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-2502",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 207967,
+        "tx_bytes": 955678,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-2501",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 710672,
+        "tx_bytes": 898747,
+        "errin": 0,
+        "errout": 11,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-9432",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 11493,
+        "tx_bytes": 276373,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-5920",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 843104,
+        "tx_bytes": 273444,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-7912",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 15356,
+        "tx_bytes": 460911,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-7189",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 297547,
+        "tx_bytes": 12038,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 5,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-5789",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 990764,
+        "tx_bytes": 535952,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-9419",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 349835,
+        "tx_bytes": 354818,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-4130",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 69940,
+        "tx_bytes": 538865,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-9540",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 883435,
+        "tx_bytes": 174211,
+        "errin": 0,
+        "errout": 13,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-9130",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 213203,
+        "tx_bytes": 680249,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-6403",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 57249,
+        "tx_bytes": 911579,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-772",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 37971,
+        "tx_bytes": 261441,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-2583",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 463954,
+        "tx_bytes": 5565,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-2218",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 363920,
+        "tx_bytes": 305136,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-3859",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 343687,
+        "tx_bytes": 319686,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-3264",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 132431,
+        "tx_bytes": 722233,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-6011",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 817063,
+        "tx_bytes": 175843,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-4713",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 452047,
+        "tx_bytes": 772354,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-6734",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 790804,
+        "tx_bytes": 739892,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-6599",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 57258,
+        "tx_bytes": 645506,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-3741",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 426976,
+        "tx_bytes": 424658,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-4529",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 701988,
+        "tx_bytes": 296599,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-7980",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 561878,
+        "tx_bytes": 57460,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-3513",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 113015,
+        "tx_bytes": 232175,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-933",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 364091,
+        "tx_bytes": 746890,
+        "errin": 0,
+        "errout": 6,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-8954",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 254973,
+        "tx_bytes": 144556,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-8078",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 258530,
+        "tx_bytes": 679455,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-8254",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 371354,
+        "tx_bytes": 593010,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-5272",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 240895,
+        "tx_bytes": 880917,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 5,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-8662",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 18590,
+        "tx_bytes": 560952,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-220",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 123491,
+        "tx_bytes": 386444,
+        "errin": 0,
+        "errout": 18,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-4171",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 852139,
+        "tx_bytes": 151106,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-2203",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 235021,
+        "tx_bytes": 570761,
+        "errin": 0,
+        "errout": 7,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-3824",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 548261,
+        "tx_bytes": 463037,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-2546",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 233531,
+        "tx_bytes": 603917,
+        "errin": 0,
+        "errout": 14,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-5300",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 478310,
+        "tx_bytes": 568637,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-6346",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 107700,
+        "tx_bytes": 27225,
+        "errin": 0,
+        "errout": 19,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-6816",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 321927,
+        "tx_bytes": 134705,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-7115",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 993410,
+        "tx_bytes": 746804,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-6117",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 422528,
+        "tx_bytes": 720002,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-2988",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 432969,
+        "tx_bytes": 707171,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-858",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 832038,
+        "tx_bytes": 113133,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-3317",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 364140,
+        "tx_bytes": 734980,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-66",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 120382,
+        "tx_bytes": 972886,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-2231",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 695647,
+        "tx_bytes": 739933,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-5481",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 813057,
+        "tx_bytes": 329167,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-4835",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 546333,
+        "tx_bytes": 660630,
+        "errin": 0,
+        "errout": 20,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-7702",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 829229,
+        "tx_bytes": 482030,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-6852",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 350377,
+        "tx_bytes": 887090,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-8984",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 992590,
+        "tx_bytes": 972092,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-7306",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 208325,
+        "tx_bytes": 465037,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-3210",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 689637,
+        "tx_bytes": 624377,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-283",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 895419,
+        "tx_bytes": 984009,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-1401",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 387633,
+        "tx_bytes": 907995,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-143",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 407192,
+        "tx_bytes": 705235,
+        "errin": 0,
+        "errout": 9,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-4130",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 332206,
+        "tx_bytes": 620776,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-1023",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 288612,
+        "tx_bytes": 746285,
+        "errin": 0,
+        "errout": 12,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-5650",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 610796,
+        "tx_bytes": 62539,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-1850",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 321004,
+        "tx_bytes": 390273,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-639",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 116316,
+        "tx_bytes": 641523,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-3811",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 73238,
+        "tx_bytes": 171311,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-5206",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 153882,
+        "tx_bytes": 233506,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-6076",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 403046,
+        "tx_bytes": 675918,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 5,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-7828",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 986621,
+        "tx_bytes": 53317,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-3416",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 686266,
+        "tx_bytes": 560950,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-2432",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 637227,
+        "tx_bytes": 455542,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-3356",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 679436,
+        "tx_bytes": 74839,
+        "errin": 0,
+        "errout": 18,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-9184",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 729179,
+        "tx_bytes": 5327,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-9103",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 134459,
+        "tx_bytes": 373968,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-1441",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 237644,
+        "tx_bytes": 948988,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-6600",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 912458,
+        "tx_bytes": 35971,
+        "errin": 0,
+        "errout": 9,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-7313",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 670809,
+        "tx_bytes": 301186,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-5566",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 693018,
+        "tx_bytes": 455557,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-2738",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 465741,
+        "tx_bytes": 673473,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-5876",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 218950,
+        "tx_bytes": 548437,
+        "errin": 0,
+        "errout": 20,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-3692",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 302387,
+        "tx_bytes": 597576,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-5904",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 811853,
+        "tx_bytes": 476211,
+        "errin": 0,
+        "errout": 15,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-3476",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 190149,
+        "tx_bytes": 900833,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-4243",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 336810,
+        "tx_bytes": 611641,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-6845",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 75057,
+        "tx_bytes": 621415,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-6275",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 427728,
+        "tx_bytes": 383699,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 2,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-3249",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 491062,
+        "tx_bytes": 27210,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-5259",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 129624,
+        "tx_bytes": 803513,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-8378",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 282005,
+        "tx_bytes": 805839,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-8305",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 837284,
+        "tx_bytes": 331142,
+        "errin": 0,
+        "errout": 20,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-612",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 717189,
+        "tx_bytes": 260380,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-5799",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 195802,
+        "tx_bytes": 490479,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 4,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-1396",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 54354,
+        "tx_bytes": 90538,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-2878",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 316375,
+        "tx_bytes": 551824,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 4,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-3711",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 261894,
+        "tx_bytes": 862710,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-4502",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 568172,
+        "tx_bytes": 835024,
+        "errin": 0,
+        "errout": 9,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-3806",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 138962,
+        "tx_bytes": 301081,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-6507",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 984251,
+        "tx_bytes": 786158,
+        "errin": 0,
+        "errout": 19,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-2658",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 781036,
+        "tx_bytes": 92076,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-3582",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 593221,
+        "tx_bytes": 202342,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-9700",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 9454,
+        "tx_bytes": 721202,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-8951",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 701232,
+        "tx_bytes": 679611,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-8409",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 434136,
+        "tx_bytes": 931905,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-2555",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 181069,
+        "tx_bytes": 964018,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-7076",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 229170,
+        "tx_bytes": 635765,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-2457",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 748918,
+        "tx_bytes": 662812,
+        "errin": 0,
+        "errout": 16,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-2666",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 949357,
+        "tx_bytes": 610748,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-3996",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 832542,
+        "tx_bytes": 366772,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 5,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-3123",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 182860,
+        "tx_bytes": 658763,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-299",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 333285,
+        "tx_bytes": 491017,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 4,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-8465",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 910004,
+        "tx_bytes": 12499,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-5054",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 39546,
+        "tx_bytes": 219967,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-7079",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 821393,
+        "tx_bytes": 423380,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-4363",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 545941,
+        "tx_bytes": 503213,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-4120",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 547923,
+        "tx_bytes": 996958,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-1564",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 871868,
+        "tx_bytes": 243675,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-9968",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 477112,
+        "tx_bytes": 498766,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-7366",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 64224,
+        "tx_bytes": 143387,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 2,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-4869",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 315675,
+        "tx_bytes": 542689,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-9038",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 143997,
+        "tx_bytes": 882971,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-2241",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 733123,
+        "tx_bytes": 127816,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-6539",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 792317,
+        "tx_bytes": 420941,
+        "errin": 0,
+        "errout": 20,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-8237",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 943083,
+        "tx_bytes": 97912,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-540",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 959756,
+        "tx_bytes": 77910,
+        "errin": 0,
+        "errout": 11,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-8916",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 275041,
+        "tx_bytes": 173064,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-4647",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 93853,
+        "tx_bytes": 671879,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 2,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-46",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 190323,
+        "tx_bytes": 235333,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-1032",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 178996,
+        "tx_bytes": 931916,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-6789",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 143902,
+        "tx_bytes": 115751,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-2230",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 64797,
+        "tx_bytes": 966690,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 5,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-3023",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 627284,
+        "tx_bytes": 494689,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-983",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 409692,
+        "tx_bytes": 176553,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-5107",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 190806,
+        "tx_bytes": 991880,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-1035",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 456629,
+        "tx_bytes": 55563,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-9773",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 615856,
+        "tx_bytes": 687150,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-7529",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 918388,
+        "tx_bytes": 659022,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-8753",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 845740,
+        "tx_bytes": 361220,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-6256",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 511146,
+        "tx_bytes": 398881,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 3,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-7016",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 259081,
+        "tx_bytes": 7074,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-2989",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 552778,
+        "tx_bytes": 781123,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-841",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 44173,
+        "tx_bytes": 122561,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-5274",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 152500,
+        "tx_bytes": 553051,
+        "errin": 0,
+        "errout": 6,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-6428",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 921005,
+        "tx_bytes": 66333,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-6303",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.035889+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 582077,
+        "tx_bytes": 542826,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-3286",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 978367,
+        "tx_bytes": 826283,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-549",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 292534,
+        "tx_bytes": 772324,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-2781",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 961786,
+        "tx_bytes": 658741,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-4146",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 207609,
+        "tx_bytes": 978690,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-1794",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 90339,
+        "tx_bytes": 462695,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-8979",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 816176,
+        "tx_bytes": 217119,
+        "errin": 0,
+        "errout": 20,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-734",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 843964,
+        "tx_bytes": 952223,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-4850",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 871042,
+        "tx_bytes": 413547,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 4,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-4296",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 868597,
+        "tx_bytes": 980886,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-4684",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 131839,
+        "tx_bytes": 69691,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 5,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-658",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 823557,
+        "tx_bytes": 131542,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-3446",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 573941,
+        "tx_bytes": 517573,
+        "errin": 0,
+        "errout": 7,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-9300",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 627468,
+        "tx_bytes": 339540,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-6804",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 484428,
+        "tx_bytes": 81989,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 3,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-999",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 768298,
+        "tx_bytes": 21011,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-5745",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 565447,
+        "tx_bytes": 654296,
+        "errin": 0,
+        "errout": 10,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-4034",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 214371,
+        "tx_bytes": 274076,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-6086",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 687479,
+        "tx_bytes": 408008,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-4054",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 411177,
+        "tx_bytes": 888964,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-9980",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 441406,
+        "tx_bytes": 85311,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-9369",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 700994,
+        "tx_bytes": 137755,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-3340",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 22931,
+        "tx_bytes": 804489,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-3541",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 126795,
+        "tx_bytes": 309706,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-7847",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 220833,
+        "tx_bytes": 606778,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-9047",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 483424,
+        "tx_bytes": 512403,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-6172",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 921582,
+        "tx_bytes": 324882,
+        "errin": 0,
+        "errout": 19,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-1035",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 414805,
+        "tx_bytes": 697911,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-5900",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 348217,
+        "tx_bytes": 120197,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 4,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-4075",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 203447,
+        "tx_bytes": 546537,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-4591",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 997631,
+        "tx_bytes": 338969,
+        "errin": 0,
+        "errout": 8,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-2745",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 451198,
+        "tx_bytes": 300304,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-8561",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 880606,
+        "tx_bytes": 835122,
+        "errin": 0,
+        "errout": 9,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-6767",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 778700,
+        "tx_bytes": 387608,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-9074",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 277064,
+        "tx_bytes": 987320,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-9307",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 368780,
+        "tx_bytes": 823987,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-4502",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 709114,
+        "tx_bytes": 666235,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-6203",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 509793,
+        "tx_bytes": 800305,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-1310",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 617433,
+        "tx_bytes": 256495,
+        "errin": 0,
+        "errout": 10,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-4179",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 368550,
+        "tx_bytes": 594072,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-4018",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 366113,
+        "tx_bytes": 20052,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-2706",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 39545,
+        "tx_bytes": 582899,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-1219",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 741182,
+        "tx_bytes": 45644,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-7562",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 665269,
+        "tx_bytes": 569501,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-7006",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 776704,
+        "tx_bytes": 530842,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 2,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-5467",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 975743,
+        "tx_bytes": 765410,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-2171",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 507509,
+        "tx_bytes": 17356,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-505",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 236744,
+        "tx_bytes": 12211,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-2056",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 625522,
+        "tx_bytes": 698386,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 2,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-9008",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 479546,
+        "tx_bytes": 77867,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-1426",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 855669,
+        "tx_bytes": 924269,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-5997",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 244206,
+        "tx_bytes": 392100,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-5822",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 625649,
+        "tx_bytes": 382365,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-889",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 382312,
+        "tx_bytes": 336862,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-2923",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 71513,
+        "tx_bytes": 466746,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 3,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-4058",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 793770,
+        "tx_bytes": 5113,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-8683",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 792386,
+        "tx_bytes": 804505,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-7564",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 753824,
+        "tx_bytes": 226820,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-9720",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 125454,
+        "tx_bytes": 971169,
+        "errin": 0,
+        "errout": 14,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-3884",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 612691,
+        "tx_bytes": 908345,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-168",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 217476,
+        "tx_bytes": 24890,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 2,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-6020",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 399214,
+        "tx_bytes": 59762,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-7348",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 205135,
+        "tx_bytes": 372761,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-9459",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 411024,
+        "tx_bytes": 912546,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-5309",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 649345,
+        "tx_bytes": 217431,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-655",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 483520,
+        "tx_bytes": 587290,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-6066",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 753976,
+        "tx_bytes": 665462,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-6616",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 35580,
+        "tx_bytes": 168608,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-1455",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 109872,
+        "tx_bytes": 486420,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-929",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 775335,
+        "tx_bytes": 829597,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-1198",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 413362,
+        "tx_bytes": 639816,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-8506",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 536401,
+        "tx_bytes": 992727,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-8730",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 211804,
+        "tx_bytes": 111192,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-9022",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 583385,
+        "tx_bytes": 789937,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-9033",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 91704,
+        "tx_bytes": 874361,
+        "errin": 0,
+        "errout": 16,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-859",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 192216,
+        "tx_bytes": 298300,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-472",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 751237,
+        "tx_bytes": 29711,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-9030",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 444678,
+        "tx_bytes": 873688,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-9796",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 798868,
+        "tx_bytes": 652518,
+        "errin": 0,
+        "errout": 19,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-2068",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 424090,
+        "tx_bytes": 740480,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-6037",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 489693,
+        "tx_bytes": 304748,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-5042",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 963644,
+        "tx_bytes": 812780,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-9878",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 235469,
+        "tx_bytes": 454950,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-9504",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 797693,
+        "tx_bytes": 465878,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-7441",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 827956,
+        "tx_bytes": 515850,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-2680",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 331985,
+        "tx_bytes": 142817,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-4813",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 537733,
+        "tx_bytes": 202529,
+        "errin": 0,
+        "errout": 11,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-6402",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 425842,
+        "tx_bytes": 963049,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-676",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 374502,
+        "tx_bytes": 736428,
+        "errin": 0,
+        "errout": 17,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-2691",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 760759,
+        "tx_bytes": 958742,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-3124",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 837002,
+        "tx_bytes": 775516,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-1323",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 935786,
+        "tx_bytes": 847256,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-6005",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 435127,
+        "tx_bytes": 983104,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-4192",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 481129,
+        "tx_bytes": 190742,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-1305",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 171936,
+        "tx_bytes": 932542,
+        "errin": 0,
+        "errout": 14,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-1966",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 936774,
+        "tx_bytes": 352610,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-3797",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 592017,
+        "tx_bytes": 507334,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-2131",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 394252,
+        "tx_bytes": 11273,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-1028",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 512006,
+        "tx_bytes": 187454,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "driver: kernel oops - stack trace ...",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-3209",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 761012,
+        "tx_bytes": 704231,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-4392",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 470037,
+        "tx_bytes": 265122,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-9750",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 187870,
+        "tx_bytes": 742736,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-574",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 271209,
+        "tx_bytes": 257372,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-2707",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 73108,
+        "tx_bytes": 740528,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-1948",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 272855,
+        "tx_bytes": 997122,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 5,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-3384",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 184629,
+        "tx_bytes": 582863,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-503",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 909227,
+        "tx_bytes": 956504,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 1,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-256",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 180749,
+        "tx_bytes": 53101,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-1278",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 388224,
+        "tx_bytes": 995483,
+        "errin": 0,
+        "errout": 18,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-6524",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 462253,
+        "tx_bytes": 653128,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-256",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 691024,
+        "tx_bytes": 192274,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-4096",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 700140,
+        "tx_bytes": 58988,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-114",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 16613,
+        "tx_bytes": 424483,
+        "errin": 0,
+        "errout": 11,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-3087",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 838403,
+        "tx_bytes": 520388,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-6967",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 507956,
+        "tx_bytes": 895567,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-7216",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 86371,
+        "tx_bytes": 756643,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-9410",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 813674,
+        "tx_bytes": 81537,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 3,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-8204",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 685048,
+        "tx_bytes": 140963,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-311",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 328986,
+        "tx_bytes": 907521,
+        "errin": 0,
+        "errout": 18,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-5038",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 310684,
+        "tx_bytes": 388849,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-227",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 184526,
+        "tx_bytes": 800704,
+        "errin": 0,
+        "errout": 11,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-568",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 161439,
+        "tx_bytes": 688938,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-3775",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 688407,
+        "tx_bytes": 932703,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 4,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-1686",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 311736,
+        "tx_bytes": 838412,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-7165",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 442356,
+        "tx_bytes": 420099,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 2,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "mlx5_core: RDMA QP reset or qp error",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-5043",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 579597,
+        "tx_bytes": 504090,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node1-1777441558-4914",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 414892,
+        "tx_bytes": 295657,
+        "errin": 0,
+        "errout": 7,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node1"
+  },
+  {
+    "event_id": "evt-node2-1777441558-1403",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 95845,
+        "tx_bytes": 849065,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node3-1777441558-1946",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 361884,
+        "tx_bytes": 204666,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node3"
+  },
+  {
+    "event_id": "evt-node4-1777441558-3009",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 382923,
+        "tx_bytes": 26926,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node5-1777441558-278",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 751499,
+        "tx_bytes": 274554,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node5"
+  },
+  {
+    "event_id": "evt-node1-1777441558-1512",
+    "host": "node1",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 686607,
+        "tx_bytes": 442378,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node2-1777441558-5517",
+    "host": "node2",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 560588,
+        "tx_bytes": 414187,
+        "errin": 0,
+        "errout": 14,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: TX errors detected; driver reports packet drop",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node2"
+  },
+  {
+    "event_id": "evt-node3-1777441558-888",
+    "host": "node3",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 381359,
+        "tx_bytes": 147802,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  },
+  {
+    "event_id": "evt-node4-1777441558-9518",
+    "host": "node4",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 58911,
+        "tx_bytes": 22851,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "node4"
+  },
+  {
+    "event_id": "evt-node5-1777441558-6829",
+    "host": "node5",
+    "ts": "2026-04-29T05:45:58.039414+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 265258,
+        "tx_bytes": 259408,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ],
+    "label": "none"
+  }
+]
