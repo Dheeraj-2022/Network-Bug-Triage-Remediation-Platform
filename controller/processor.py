@@ -32,10 +32,17 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 # local imports (should exist from Phase 2)
-from controller.rules_engine import rule_based_triage
+from controller.rules_engine import rule_based_triage, select_playbook
 from controller.nlp_parser import LogParser
 from controller.triage_model import TriageModel
 from controller.ansible_runner import run_playbook
+
+# AI multi-agent layer (optional; degrades gracefully if unavailable)
+try:
+    from controller.ai import get_orchestrator, get_ai_config
+except Exception:  # pragma: no cover - AI layer is optional
+    get_orchestrator = None
+    get_ai_config = None
 
 # kafka import guarded
 try:
@@ -71,7 +78,18 @@ class SlidingStore:
 
     def recent(self, sec_window: int = 120) -> List[Dict[str, Any]]:
         cutoff = datetime.now(timezone.utc).timestamp() - sec_window
-        return [e for e in self.events if datetime.fromisoformat(e["ts"]).timestamp() >= cutoff]
+        out: List[Dict[str, Any]] = []
+        for e in self.events:
+            ts = e.get("ts")
+            if not ts:
+                continue
+            try:
+                if datetime.fromisoformat(ts).timestamp() >= cutoff:
+                    out.append(e)
+            except (ValueError, TypeError):
+                # Skip events with malformed timestamps rather than crashing.
+                continue
+        return out
 
     def hosts_with_iface_errors(self, iface_name: str, min_err: int = 1) -> List[str]:
         out = []
@@ -108,7 +126,24 @@ class Processor:
         self.store = SlidingStore()
         self.log_parser = LogParser()
         self.model = TriageModel()
+        self.orchestrator = self._init_orchestrator()
         LOG.info("Processor initialized (dry_run=%s) kafka=%s topic=%s", self.dry_run, self.kafka_bootstrap, self.topic)
+
+    @staticmethod
+    def _init_orchestrator():
+        """Build the AI orchestrator if the AI layer is available & enabled."""
+        if get_orchestrator is None:
+            return None
+        try:
+            cfg = get_ai_config() if get_ai_config else None
+            if cfg is not None and not cfg.enabled:
+                return None
+            orch = get_orchestrator()
+            LOG.info("AI multi-agent layer enabled (backend=%s)", orch.backend)
+            return orch
+        except Exception:
+            LOG.exception("AI orchestrator init failed; continuing without AI layer")
+            return None
 
     def correlate(self, event: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -205,6 +240,28 @@ class Processor:
                     "rule": rule, "log_class": log_class, "ml": ml_result, "correlation": corr}
         LOG.info("Decision: %s", json.dumps(decision, indent=2))
 
+        # AI multi-agent enrichment (RCA, remediation plan, risk). This augments
+        # the deterministic decision; it never replaces the rule/ML remediation
+        # path below, preserving backward compatibility.
+        if self.orchestrator is not None:
+            try:
+                ai_result = self.orchestrator.run(
+                    event,
+                    {"rule": rule, "ml": ml_result, "log_class": log_class},
+                )
+                decision["ai"] = {
+                    "incident_id": ai_result.get("incident_id"),
+                    "llm_backend": ai_result.get("llm_backend"),
+                    "rca": ai_result.get("rca"),
+                    "remediation": ai_result.get("remediation"),
+                    "context_sources": ai_result.get("context_sources", []),
+                }
+                audit_log({"ts": iso_now(), "event_id": event.get("event_id"),
+                           "ai_incident": decision["ai"]})
+            except Exception:
+                LOG.exception("AI workflow failed for event %s", event.get("event_id"))
+
+
         # Decide to remediate if rule asks or ML predicts high priority
         should_remediate = False
         remediation_targets = []
@@ -224,14 +281,8 @@ class Processor:
 
         # trigger remediation if needed
         if should_remediate and remediation_targets:
-            # choose playbook based on log_class or reason
-            playbook = None
-            if any('mtu' in reason.lower() or log_class == "MTU_MISMATCH" for _ in [0]):
-                playbook = "remediate_mtu.yml"
-            elif log_class == "DRIVER_FAULT" or any(t.get("component") == "rdma_qp" for t in remediation_targets):
-                playbook = "restart_driver.yml"
-            else:
-                playbook = "remediate_mtu.yml"
+            # choose playbook based on log_class / reason / target components
+            playbook = select_playbook(reason, log_class, remediation_targets)
 
             extra_vars = {"targets": remediation_targets, "reason": reason, "ml_score": ml_result.get("priority_score", 0.0)}
             ok = self.attempt_remediation(remediation_targets, playbook, extra_vars)

@@ -29,7 +29,26 @@ Return schema (output):
 }
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+
+
+def select_playbook(reason: Optional[str],
+                    log_class: Optional[str],
+                    targets: Optional[List[Dict[str, Any]]] = None) -> str:
+    """Map a triage reason / log class / targets to a remediation playbook.
+
+    Centralises the playbook-selection logic shared by the web app and the
+    controller processor so the two paths cannot drift apart.
+    """
+    reason = (reason or "").lower()
+    targets = targets or []
+    if "mtu" in reason or log_class == "MTU_MISMATCH":
+        return "remediate_mtu.yml"
+    if log_class == "DRIVER_FAULT" or any(
+        isinstance(t, dict) and t.get("component") == "rdma_qp" for t in targets
+    ):
+        return "restart_driver.yml"
+    return "remediate_mtu.yml"
 
 
 def rule_based_triage(event: Dict[str, Any],

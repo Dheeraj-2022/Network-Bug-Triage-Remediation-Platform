@@ -414,7 +414,6 @@ def configure_logging(cfg: Config):
     # keep the initial stream handler; add file handler if requested
     if logfile:
         try:
-            import os
             logdir = os.path.dirname(logfile)
             if logdir and not os.path.exists(logdir):
                 os.makedirs(logdir, exist_ok=True)

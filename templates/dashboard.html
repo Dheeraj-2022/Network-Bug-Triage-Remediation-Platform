@@ -210,6 +210,10 @@
                 <div class="label">ML Model</div>
                 <div class="value" id="kpi-model" style="font-size:1rem">--</div>
             </div>
+            <div class="kpi-card primary">
+                <div class="label">AI Reasoning</div>
+                <div class="value" id="kpi-ai" style="font-size:1rem">--</div>
+            </div>
         </div>
 
         <!-- Actions -->
@@ -248,6 +252,35 @@
                     </thead>
                     <tbody id="decisions-body">
                         <tr><td colspan="8" class="empty-state">No decisions yet. Inject events to begin.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- AI Root-Cause & Remediation (multi-agent) -->
+        <div class="panel">
+            <div class="panel-header">
+                <span>AI Root-Cause &amp; Remediation (multi-agent)</span>
+                <span style="color:var(--muted);font-size:.8rem" id="ai-count"></span>
+            </div>
+            <div class="panel-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Host</th>
+                            <th>Fault Domain</th>
+                            <th>Root Cause</th>
+                            <th>Conf.</th>
+                            <th>Playbook</th>
+                            <th>Risk</th>
+                            <th>Status</th>
+                            <th>Sources</th>
+                            <th>Approve</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ai-body">
+                        <tr><td colspan="10" class="empty-state">No AI incidents yet. Inject events to run the multi-agent workflow.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -315,9 +348,30 @@
 
         function showToast(msg, dur = 3000) {
             const t = $('#toast');
-            t.innerHTML = msg;
+            t.textContent = msg;
             t.style.display = 'block';
             setTimeout(() => t.style.display = 'none', dur);
+        }
+
+        // Loading toast: static spinner markup + escaped message text.
+        function showLoading(msg, dur = 3000) {
+            const t = $('#toast');
+            t.innerHTML = '<span class="spinner"></span> ' + esc(msg);
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', dur);
+        }
+
+        // Escape untrusted values before inserting into innerHTML to prevent XSS.
+        // Event fields (host, dmesg, root_cause, ...) can originate from external
+        // telemetry / the /api/process endpoint and must never be trusted.
+        function esc(v) {
+            if (v == null) return '';
+            return String(v)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         function fmtTime(iso) {
@@ -328,6 +382,7 @@
 
         function truncate(s, n = 40) {
             if (!s) return '';
+            s = String(s);
             return s.length > n ? s.slice(0, n) + '...' : s;
         }
 
@@ -344,6 +399,64 @@
             $('#kpi-remediations').textContent = s.remediations;
             $('#kpi-model').textContent = s.model_trained ? 'Trained' : 'Not Trained';
             $('#kpi-model').style.color = s.model_trained ? 'var(--success)' : 'var(--warning)';
+            try {
+                const ai = await fetchJSON('/api/ai/status');
+                if (ai && ai.enabled) {
+                    const label = ai.uses_llm ? ('Gemini (' + (ai.vertex_model || 'vertex') + ')') : 'Heuristic (offline)';
+                    $('#kpi-ai').textContent = label;
+                    $('#kpi-ai').style.color = ai.uses_llm ? 'var(--success)' : 'var(--muted)';
+                } else {
+                    $('#kpi-ai').textContent = 'Disabled';
+                    $('#kpi-ai').style.color = 'var(--muted)';
+                }
+            } catch (e) {
+                $('#kpi-ai').textContent = '--';
+            }
+        }
+
+        async function refreshAI() {
+            let rows = [];
+            try { rows = await fetchJSON('/api/ai/incidents'); } catch (e) { return; }
+            const tbody = $('#ai-body');
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No AI incidents yet. Inject events to run the multi-agent workflow.</td></tr>';
+                $('#ai-count').textContent = '';
+                return;
+            }
+            $('#ai-count').textContent = `Showing ${rows.length}`;
+            tbody.innerHTML = rows.slice().reverse().map(a => {
+                const conf = (a.confidence != null) ? Number(a.confidence).toFixed(2) : '--';
+                const riskColor = a.risk === 'high' ? 'var(--danger)' : (a.risk === 'medium' ? 'var(--warning)' : 'var(--success)');
+                const pending = a.status === 'pending_approval';
+                const incId = esc(a.incident_id);
+                const approveCell = pending
+                    ? `<button class="btn btn-success" style="padding:.25rem .6rem;font-size:.75rem" onclick="approveIncident('${incId}', true)">Approve</button>
+                       <button class="btn btn-danger" style="padding:.25rem .6rem;font-size:.75rem" onclick="approveIncident('${incId}', false)">Reject</button>`
+                    : `<span class="badge badge-none">${esc(a.status) || '--'}</span>`;
+                return `<tr title="${esc(a.explanation)}">
+                    <td>${fmtTime(a.ts)}</td>
+                    <td>${esc(a.host) || '--'}</td>
+                    <td><span class="badge badge-class">${esc(a.fault_domain) || 'UNKNOWN'}</span></td>
+                    <td>${esc(truncate(a.root_cause, 36))}</td>
+                    <td>${conf}</td>
+                    <td>${esc(a.playbook) || '--'}</td>
+                    <td style="color:${riskColor};font-weight:600">${esc(a.risk) || '--'}</td>
+                    <td>${pending ? '<span class="badge badge-remediate">PENDING</span>' : (esc(a.status) || '--')}</td>
+                    <td style="font-size:.72rem">${(a.context_sources || []).length}</td>
+                    <td>${approveCell}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function approveIncident(incidentId, approved) {
+            showLoading('Submitting approval...');
+            const data = await fetchJSON('/api/ai/approve', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({incident_id: incidentId, approved})
+            });
+            showToast(approved ? 'Remediation approved' : 'Remediation rejected');
+            refreshAll();
         }
 
         async function refreshDecisions() {
@@ -357,13 +470,13 @@
             $('#dec-count').textContent = `Showing ${rows.length}`;
             tbody.innerHTML = rows.reverse().map(d => `<tr>
                 <td>${fmtTime(d.ts)}</td>
-                <td>${d.host || '--'}</td>
-                <td style="font-family:monospace;font-size:.78rem">${truncate(d.event_id, 24)}</td>
-                <td><span class="badge ${d.rule_action === 'remediate' ? 'badge-remediate' : 'badge-none'}">${d.rule_action}</span></td>
-                <td><span class="badge badge-class">${d.log_class}</span></td>
-                <td>${d.ml_priority}</td>
+                <td>${esc(d.host) || '--'}</td>
+                <td style="font-family:monospace;font-size:.78rem">${esc(truncate(d.event_id, 24))}</td>
+                <td><span class="badge ${d.rule_action === 'remediate' ? 'badge-remediate' : 'badge-none'}">${esc(d.rule_action)}</span></td>
+                <td><span class="badge badge-class">${esc(d.log_class)}</span></td>
+                <td>${esc(d.ml_priority)}</td>
                 <td>${d.remediate ? '<span class="badge badge-remediate">REMEDIATE</span>' : '<span class="badge badge-none">OK</span>'}</td>
-                <td>${d.playbook || '--'}</td>
+                <td>${esc(d.playbook) || '--'}</td>
             </tr>`).join('');
         }
 
@@ -381,12 +494,12 @@
                 const errs = (parseInt(eth0.errin||0) + parseInt(eth0.errout||0));
                 return `<tr>
                     <td>${fmtTime(e.ts)}</td>
-                    <td>${e.host}</td>
-                    <td style="font-family:monospace;font-size:.78rem">${truncate(e.event_id, 24)}</td>
+                    <td>${esc(e.host)}</td>
+                    <td style="font-family:monospace;font-size:.78rem">${esc(truncate(e.event_id, 24))}</td>
                     <td style="color:${errs > 0 ? 'var(--danger)' : 'var(--success)'}">${errs}</td>
-                    <td style="color:${(e.rdma||{}).qp_errors > 0 ? 'var(--danger)' : 'var(--success)'}">${(e.rdma||{}).qp_errors || 0}</td>
-                    <td>${eth0.mtu || '--'}</td>
-                    <td>${truncate(e.dmesg_tail, 50)}</td>
+                    <td style="color:${(e.rdma||{}).qp_errors > 0 ? 'var(--danger)' : 'var(--success)'}">${esc((e.rdma||{}).qp_errors || 0)}</td>
+                    <td>${esc(eth0.mtu) || '--'}</td>
+                    <td>${esc(truncate(e.dmesg_tail, 50))}</td>
                 </tr>`;
             }).join('');
         }
@@ -402,20 +515,20 @@
             $('#audit-count').textContent = `${rows.length} entries`;
             tbody.innerHTML = rows.reverse().map(a => `<tr>
                 <td>${fmtTime(a.ts)}</td>
-                <td>${a.host || '--'}</td>
-                <td style="font-family:monospace;font-size:.78rem">${truncate(a.event_id, 24)}</td>
-                <td>${a.playbook || '--'}</td>
-                <td>${truncate(a.reason, 40)}</td>
-                <td>${a.status || '--'}</td>
+                <td>${esc(a.host) || '--'}</td>
+                <td style="font-family:monospace;font-size:.78rem">${esc(truncate(a.event_id, 24))}</td>
+                <td>${esc(a.playbook) || '--'}</td>
+                <td>${esc(truncate(a.reason, 40))}</td>
+                <td>${esc(a.status) || '--'}</td>
             </tr>`).join('');
         }
 
         async function refreshAll() {
-            await Promise.all([refreshStatus(), refreshDecisions(), refreshEvents(), refreshAudit()]);
+            await Promise.all([refreshStatus(), refreshDecisions(), refreshEvents(), refreshAudit(), refreshAI()]);
         }
 
         async function injectEvents() {
-            showToast('<span class="spinner"></span> Injecting events...');
+            showLoading('Injecting events...');
             const count = parseInt(slider.value);
             const data = await fetchJSON('/api/inject', {
                 method: 'POST',
@@ -427,14 +540,14 @@
         }
 
         async function loadSampleEvents() {
-            showToast('<span class="spinner"></span> Loading sample events...');
+            showLoading('Loading sample events...');
             const data = await fetchJSON('/api/load_sample_events', {method: 'POST'});
             showToast(`Loaded ${data.loaded} sample events`);
             refreshAll();
         }
 
         async function trainModel() {
-            showToast('<span class="spinner"></span> Training model... please wait', 15000);
+            showLoading('Training model... please wait', 15000);
             const data = await fetchJSON('/api/train', {method: 'POST'});
             if (data.ok) {
                 showToast('Model trained successfully!');

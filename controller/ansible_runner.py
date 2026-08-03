@@ -11,9 +11,9 @@ Provides:
 
 import json
 import os
-import shlex
 import subprocess
 import sys
+import tempfile
 from typing import Dict, Optional
 
 try:
@@ -43,7 +43,9 @@ def run_playbook(playbook_path: str, limit: Optional[str] = None, extra_vars: Op
         return True
 
     if ansible_runner:
-        private_data_dir = os.path.join("/tmp", "nbt_ansible_runner")
+        private_data_dir = os.path.join(
+            tempfile.gettempdir(), "nbt_ansible_runner"
+        )
         os.makedirs(private_data_dir, exist_ok=True)
         runner = ansible_runner.run(private_data_dir=private_data_dir,
                                     playbook=playbook_path,

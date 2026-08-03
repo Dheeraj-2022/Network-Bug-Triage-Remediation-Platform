@@ -44,10 +44,33 @@ class TriageModel:
     def predict(self, event: Dict[str, Any], log_embedding: np.ndarray) -> Dict[str, Any]:
         if not self.model:
             return {"priority_score": 0.1, "localization": event.get("host", "unknown")}
-        X = self.extract_features(event, log_embedding).reshape(1, -1)
-        prob = self.model.predict_proba(X)[0].max()
-        label = self.model.predict(X)[0]
-        return {"priority_score": float(prob), "localization": str(label)}
+        try:
+            X = self.extract_features(event, log_embedding).reshape(1, -1)
+            # scikit-learn style estimators (XGBClassifier) expose predict_proba.
+            if hasattr(self.model, "predict_proba"):
+                prob = self.model.predict_proba(X)[0].max()
+                label = self.model.predict(X)[0]
+                return {"priority_score": float(prob), "localization": str(label)}
+            # Raw xgboost Booster: predict() returns the positive-class
+            # probability for a binary:logistic objective.
+            if hasattr(self.model, "predict"):
+                try:
+                    import xgboost as xgb  # local import; optional dep
+
+                    dmatrix = xgb.DMatrix(X)
+                    raw = self.model.predict(dmatrix)
+                except Exception:
+                    raw = self.model.predict(X)
+                score = float(np.asarray(raw).ravel()[0])
+                return {
+                    "priority_score": score,
+                    "localization": event.get("host", "unknown"),
+                }
+        except Exception:
+            # Never let a model/feature-shape mismatch break the pipeline; fall
+            # back to a low-priority default so downstream logic still runs.
+            pass
+        return {"priority_score": 0.1, "localization": event.get("host", "unknown")}
 
 
 # Self-test

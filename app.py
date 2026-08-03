@@ -30,15 +30,25 @@ ROOT = os.path.abspath(os.path.dirname(__file__))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from controller.rules_engine import rule_based_triage
+from controller.rules_engine import rule_based_triage, select_playbook
 from controller.nlp_parser import LogParser
 from controller.triage_model import TriageModel
+
+# AI multi-agent layer (optional; degrades gracefully if unavailable)
+try:
+    from controller.ai import get_orchestrator, get_ai_config
+except Exception:  # pragma: no cover - AI layer is optional
+    get_orchestrator = None
+    get_ai_config = None
 
 # ---------------------------------------------------------------------------
 # App setup
 # ---------------------------------------------------------------------------
 app = Flask(__name__, template_folder="templates", static_folder="static")
-app.secret_key = "nbt-platform-secret"
+# Secret key must never be a checked-in constant. Prefer an explicit env value
+# (stable across restarts for signed sessions); otherwise fall back to a random
+# per-process key so the app is still usable in dev without leaking a secret.
+app.secret_key = os.environ.get("NBT_SECRET_KEY") or os.urandom(24).hex()
 
 LOG = logging.getLogger("nbt.webapp")
 LOG.setLevel(logging.INFO)
@@ -53,6 +63,7 @@ _lock = Lock()
 _events: list = []          # raw telemetry events
 _decisions: list = []       # triage decisions
 _audit_log: list = []       # remediation audit entries
+_ai_incidents: list = []    # AI multi-agent workflow results
 _model_status: dict = {"trained": False, "message": "Not trained yet"}
 
 from typing import Optional
@@ -78,12 +89,41 @@ def _get_triage_model() -> TriageModel:
     return _triage_model
 
 
+_orchestrator = None
+_orchestrator_failed = False
+
+
+def _get_orchestrator():
+    """Lazily build the AI orchestrator. Returns None if the AI layer is off."""
+    global _orchestrator, _orchestrator_failed
+    if _orchestrator_failed or get_orchestrator is None:
+        return None
+    if _orchestrator is None:
+        try:
+            cfg = get_ai_config() if get_ai_config else None
+            if cfg is not None and not cfg.enabled:
+                _orchestrator_failed = True
+                return None
+            _orchestrator = get_orchestrator()
+        except Exception:
+            LOG.exception("Failed to initialise AI orchestrator; disabling AI layer")
+            _orchestrator_failed = True
+            return None
+    return _orchestrator
+
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 SAMPLE_EVENTS_PATH = os.path.join(ROOT, "data", "sample_events.json")
-AUDIT_LOG_PATH = os.path.join(ROOT, "logs", "remediation_audit.log")
 MODEL_PATH = os.path.join(ROOT, "controller", "models", "xgb_model.joblib")
+
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    val = os.environ.get(name)
+    if val is None:
+        return default
+    return val.strip().lower() in {"1", "true", "yes", "on"}
 
 
 def iso_now():
@@ -153,12 +193,7 @@ def _process_event(event: dict) -> dict:
         reason = f"ML-priority:{ml_result.get('priority_score')}"
 
     if should_remediate:
-        if "mtu" in reason.lower() or log_class == "MTU_MISMATCH":
-            playbook = "remediate_mtu.yml"
-        elif log_class == "DRIVER_FAULT":
-            playbook = "restart_driver.yml"
-        else:
-            playbook = "remediate_mtu.yml"
+        playbook = select_playbook(reason, log_class)
 
     decision = {
         "ts": iso_now(),
@@ -172,6 +207,34 @@ def _process_event(event: dict) -> dict:
         "remediate": should_remediate,
         "playbook": playbook,
     }
+
+    # ---- AI multi-agent workflow (optional, non-blocking to legacy path) ----
+    orchestrator = _get_orchestrator()
+    if orchestrator is not None:
+        try:
+            base_decision = {
+                "rule": rule,
+                "ml": ml_result,
+                "log_class": log_class,
+            }
+            ai_result = orchestrator.run(event, base_decision)
+            rca = ai_result.get("rca", {})
+            remediation = ai_result.get("remediation", {})
+            decision["ai"] = {
+                "incident_id": ai_result.get("incident_id"),
+                "llm_backend": ai_result.get("llm_backend"),
+                "fault_domain": rca.get("fault_domain"),
+                "root_cause": rca.get("root_cause"),
+                "confidence": rca.get("confidence"),
+                "ai_playbook": remediation.get("playbook"),
+                "risk": remediation.get("risk"),
+                "status": remediation.get("status"),
+                "context_sources": ai_result.get("context_sources", []),
+            }
+            with _lock:
+                _ai_incidents.append(ai_result)
+        except Exception:
+            LOG.exception("AI workflow failed for event %s", event.get("event_id"))
 
     # Record audit
     if should_remediate:
@@ -206,6 +269,7 @@ def api_status():
             "remediations": sum(1 for d in _decisions if d.get("remediate")),
             "model_trained": os.path.exists(MODEL_PATH),
             "model_status": _model_status,
+            "ai_incidents": len(_ai_incidents),
         })
 
 
@@ -227,12 +291,115 @@ def api_audit():
         return jsonify(_audit_log[-50:])
 
 
+# ---------------------------------------------------------------------------
+# AI multi-agent endpoints
+# ---------------------------------------------------------------------------
+@app.route("/api/ai/status")
+def api_ai_status():
+    """Report AI subsystem status (LLM backend, retrieval, memory, approval)."""
+    orchestrator = _get_orchestrator()
+    if orchestrator is None:
+        return jsonify({"enabled": False, "reason": "AI layer unavailable/disabled"})
+    try:
+        return jsonify(orchestrator.status())
+    except Exception as e:  # pragma: no cover - defensive
+        LOG.exception("AI status failed")
+        return jsonify({"enabled": False, "error": str(e)}), 500
+
+
+@app.route("/api/ai/incidents")
+def api_ai_incidents():
+    """Return recent AI workflow incidents (RCA + remediation plans)."""
+    with _lock:
+        recent = _ai_incidents[-50:]
+    # Return a compact projection for the dashboard.
+    out = []
+    for r in recent:
+        rca = r.get("rca", {})
+        rem = r.get("remediation", {})
+        out.append({
+            "incident_id": r.get("incident_id"),
+            "ts": r.get("ts"),
+            "host": r.get("host"),
+            "event_id": r.get("event_id"),
+            "llm_backend": r.get("llm_backend"),
+            "fault_domain": rca.get("fault_domain"),
+            "root_cause": rca.get("root_cause"),
+            "confidence": rca.get("confidence"),
+            "explanation": rca.get("explanation"),
+            "playbook": rem.get("playbook"),
+            "risk": rem.get("risk"),
+            "status": rem.get("status"),
+            "requires_human_approval": rem.get("requires_human_approval"),
+            "context_sources": r.get("context_sources", []),
+        })
+    return jsonify(out)
+
+
+@app.route("/api/ai/incident/<incident_id>")
+def api_ai_incident_detail(incident_id):
+    """Return the full workflow trace for a single incident."""
+    with _lock:
+        for r in reversed(_ai_incidents):
+            if r.get("incident_id") == incident_id:
+                return jsonify(r)
+    return jsonify({"error": "incident not found"}), 404
+
+
+@app.route("/api/ai/approve", methods=["POST"])
+def api_ai_approve():
+    """Human-approval gate: approve (and optionally validate) a remediation.
+
+    Body: {"incident_id": "...", "approved": true}
+    """
+    body = request.get_json(silent=True) or {}
+    incident_id = body.get("incident_id")
+    approved = bool(body.get("approved", True))
+    if not incident_id:
+        return jsonify({"error": "incident_id required"}), 400
+
+    orchestrator = _get_orchestrator()
+    with _lock:
+        target = next(
+            (r for r in reversed(_ai_incidents) if r.get("incident_id") == incident_id),
+            None,
+        )
+    if target is None:
+        return jsonify({"error": "incident not found"}), 404
+
+    if not approved:
+        target.get("remediation", {})["status"] = "rejected"
+        return jsonify({"ok": True, "status": "rejected", "incident_id": incident_id})
+
+    # Approve; run validation + audit continuation if orchestrator is present.
+    target.get("remediation", {})["status"] = "approved"
+    result = target
+    if orchestrator is not None:
+        try:
+            result = orchestrator.resume_after_approval(target)
+            with _lock:
+                _ai_incidents.append(result)
+        except Exception:
+            LOG.exception("resume_after_approval failed")
+    return jsonify({
+        "ok": True,
+        "status": "approved",
+        "incident_id": incident_id,
+        "validation": result.get("validation", {}),
+    })
+
+
 @app.route("/api/inject", methods=["POST"])
 def api_inject():
     """Inject synthetic events and process them through the triage pipeline."""
     body = request.get_json(silent=True) or {}
-    count = int(body.get("count", 3))
-    inject_errors = body.get("inject_errors", True)
+    try:
+        count = int(body.get("count", 3))
+    except (TypeError, ValueError):
+        return jsonify({"error": "count must be an integer"}), 400
+    # Clamp to a sane range to avoid unbounded work from a single request.
+    count = max(1, min(count, 100))
+    inject_errors = bool(body.get("inject_errors", True))
     hosts = ["node1", "node2", "node3", "node4", "node5"]
 
     results = []
@@ -252,8 +419,8 @@ def api_inject():
 def api_process_single():
     """Process a single custom event."""
     event = request.get_json(silent=True)
-    if not event:
-        return jsonify({"error": "provide a JSON event body"}), 400
+    if not isinstance(event, dict):
+        return jsonify({"error": "provide a JSON object event body"}), 400
     if "event_id" not in event:
         event["event_id"] = f"custom-{int(time.time())}-{random.randint(1,9999)}"
     if "host" not in event:
@@ -279,12 +446,20 @@ def api_load_samples():
     """Load events from data/sample_events.json and triage them."""
     if not os.path.exists(SAMPLE_EVENTS_PATH):
         return jsonify({"error": "sample_events.json not found"}), 404
-    with open(SAMPLE_EVENTS_PATH) as f:
-        events = json.load(f)
+    try:
+        with open(SAMPLE_EVENTS_PATH, encoding="utf-8") as f:
+            events = json.load(f)
+    except (OSError, ValueError) as e:
+        LOG.exception("Failed to read sample events")
+        return jsonify({"error": f"could not read sample_events.json: {e}"}), 500
+    if not isinstance(events, list):
+        return jsonify({"error": "sample_events.json must contain a JSON array"}), 400
     # Take a subset to keep things fast
     subset = events[:20]
     results = []
     for ev in subset:
+        if not isinstance(ev, dict):
+            continue
         if "event_id" not in ev:
             ev["event_id"] = f"sample-{int(time.time())}-{random.randint(1,9999)}"
         if "ts" not in ev:
@@ -294,7 +469,7 @@ def api_load_samples():
             _events.append(ev)
             _decisions.append(decision)
         results.append(decision)
-    return jsonify({"loaded": len(subset), "decisions": results})
+    return jsonify({"loaded": len(results), "decisions": results})
 
 
 @app.route("/api/train", methods=["POST"])
@@ -323,6 +498,7 @@ def api_clear():
         _events.clear()
         _decisions.clear()
         _audit_log.clear()
+        _ai_incidents.clear()
     return jsonify({"ok": True})
 
 
@@ -330,8 +506,16 @@ def api_clear():
 if __name__ == "__main__":
     os.makedirs(os.path.join(ROOT, "logs"), exist_ok=True)
     os.makedirs(os.path.join(ROOT, "controller", "models"), exist_ok=True)
+    # Debug mode is opt-in via env only: the Werkzeug debugger allows arbitrary
+    # code execution and must never default to on.
+    debug = _env_bool("NBT_DEBUG", False)
+    host = os.environ.get("NBT_HOST", "127.0.0.1")
+    try:
+        port = int(os.environ.get("NBT_PORT", "5000"))
+    except ValueError:
+        port = 5000
     print("=" * 60)
     print("  Network Bug Triage & Remediation Platform")
-    print("  Open http://127.0.0.1:5000 in your browser")
+    print(f"  Open http://{host}:{port} in your browser")
     print("=" * 60)
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host=host, port=port, debug=debug)
