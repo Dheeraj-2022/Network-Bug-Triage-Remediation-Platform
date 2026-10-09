@@ -4,6 +4,8 @@ pyyaml
 kafka-python
 python-dateutil
 flask
+fastapi
+uvicorn
 
 # eBPF (for packet sampling, optional)
 bcc
