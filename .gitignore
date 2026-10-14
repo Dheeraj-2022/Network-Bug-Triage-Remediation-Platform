@@ -73,3 +73,29 @@ logs/
 
 # Data (keep sample, ignore generated)
 data/agent-queue.jsonl
+
+# AI layer runtime state (written by controller/ai/memory.py)
+controller/ai/store/*.json
+controller/ai/store/*.jsonl
+
+# Secrets / local env (frontend/.env is already tracked and holds only a URL)
+.env
+.env.*
+!.env.example
+*.pem
+*-credentials.json
+
+# Python tooling caches
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.ipynb_checkpoints/
+pip-wheel-metadata/
+
+# Ansible runner / Vagrant artifacts
+.vagrant/
+infra/Vagrantfile
+artifacts/
+
+# Node (root-level, if tooling is ever added)
+node_modules/

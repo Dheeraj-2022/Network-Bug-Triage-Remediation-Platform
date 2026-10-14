@@ -13,7 +13,6 @@ It integrates **network telemetry (kernel logs, NIC stats, RDMA counters)** with
 - **Infra**: Multi-VM setup with Vagrant/libvirt + Soft-RoCE for RDMA  
 - **ML/NLP**: XGBoost classifier + transformer-based log embeddings
 
-=======
 ## 🏗️ System Architecture
 
 ![Network Bug Triage & Remediation Platform Architecture](docs/network_bug_architecture.png)
@@ -89,9 +88,56 @@ python -m controller.ai.evaluation --dataset data/eval_labeled.json
 ```
 
 ## ▶️ Running
-```bash
+
+### 1. Python environment
+```powershell
+.\myenv\Scripts\Activate.ps1      # or create your own venv
 pip install -r requirements.txt
-python app.py          # dashboard at http://127.0.0.1:5000
-# or the pipeline consumer:
-python controller/processor.py --dry-run
 ```
+`bcc` (Linux-only) and `ansible` may fail to install on Windows; comment them out
+if you only need the UI / dry-run modes. `sentence-transformers` is optional
+(zero-vector embeddings are used if it is missing).
+
+### 2. Backend (pick one)
+```bash
+python main.py   # FastAPI: http://127.0.0.1:8000  (Swagger at /docs) - used by the React UI
+python app.py    # Flask:   http://127.0.0.1:5000  (legacy dashboard)
+```
+
+| Variable | Purpose |
+|----------|---------|
+| `NBT_FASTAPI_HOST` / `NBT_FASTAPI_PORT` | FastAPI bind address (default `127.0.0.1:8000`) |
+| `NBT_CORS_ORIGINS` | Extra comma-separated CORS origins |
+| `NBT_HOST` / `NBT_PORT` / `NBT_DEBUG` | Flask bind address / debug mode |
+| `NBT_SECRET_KEY` | Flask session key (random per process if unset) |
+
+### 3. React frontend (optional)
+```bash
+cd frontend
+npm install
+npm run dev      # http://localhost:5173
+```
+The API URL is read from `frontend/.env` (`VITE_API_BASE_URL`, default `http://127.0.0.1:8000`).
+
+### 4. Pipeline without the UI
+```bash
+python -m tests.validate_pipeline --mode dry --count 4
+python -m tests.test_ai_layer
+```
+
+### 5. Kafka mode (requires Docker)
+```bash
+docker compose up -d                                   # ZooKeeper + Kafka on localhost:9092
+python -m controller.processor --kafka localhost:9092  # add --dry-run to skip real Ansible runs
+python -m tests.validate_pipeline --mode kafka --kafka localhost:9092 --count 5
+```
+Without `--dry-run` the processor executes real playbooks against `infra/inventory.ini`
+(hosts are commented out by default). UI-triggered remediation is always simulated.
+
+### 6. Agent / multi-VM deployment (Linux)
+```bash
+python3 agent/agent.py --dry-run --once          # collect one telemetry event
+bash infra/create-vm.sh 5 --up                   # Vagrant testbed
+ansible-playbook infra/site.yml                  # see docs/ansible.md
+```
+`tests/inject_faults.sh` is destructive; use it on an isolated testbed only.

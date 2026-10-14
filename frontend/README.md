@@ -1,17 +1,45 @@
-# React + TypeScript + Vite
+# Network Triage Dashboard (React + TypeScript + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React UI for the Network Bug Triage & Remediation Platform. It talks to the FastAPI
+backend (`main.py` in the repo root) and shows telemetry events, triage decisions,
+AI incidents, the remediation audit trail, and the human-approval workflow.
 
-Currently, two official plugins are available:
+## Getting started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Start the backend from the repo root: `python main.py` (serves `http://127.0.0.1:8000`).
+2. Install and run the UI:
 
-## React Compiler
+```bash
+npm install
+npm run dev      # http://localhost:5173
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Script | Purpose |
+|--------|---------|
+| `npm run dev` | Vite dev server with HMR |
+| `npm run build` | Type-check (`tsc -b`) and production build |
+| `npm run preview` | Serve the production build locally |
+| `npm run lint` | Run Oxlint |
 
-## Expanding the Oxlint configuration
+## Configuration
+
+`.env` sets the backend URL (defaults to `http://127.0.0.1:8000` if unset):
+
+```
+VITE_API_BASE_URL=http://127.0.0.1:8000
+```
+
+The backend allows CORS from `localhost`/`127.0.0.1` on ports 3000, 5000, 5173 and 8000;
+add others with the `NBT_CORS_ORIGINS` environment variable.
+
+## Structure
+
+- `src/pages/` - Overview, Events, Decisions, Incidents, Incident detail, AI Analysis, Remediation, Audit Trail
+- `src/components/` - Sidebar, Topbar, Toast, action modals
+- `src/services/api.ts` - API client for the `/api/*` endpoints
+- `src/types/index.ts` - shared TypeScript types
+
+## Oxlint configuration
 
 If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
 
