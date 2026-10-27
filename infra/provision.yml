@@ -62,8 +62,6 @@
 
     - name: Install pip requirements into venv
       command: "{{ venv_dir }}/bin/pip install -r {{ project_dir }}/requirements.txt"
-      args:
-        warn: false
 
     - name: Ensure triage user exists
       user:

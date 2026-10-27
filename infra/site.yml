@@ -1,4 +1,4 @@
-﻿---
+---
 - name: Configure controller node
   hosts: controller
   become: true

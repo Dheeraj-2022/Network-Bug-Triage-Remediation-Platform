@@ -26,20 +26,24 @@ sentence-transformers
 # Automation
 ansible
 
-# --- AI multi-agent layer (all OPTIONAL) --------------------------------------
+# --- AI multi-agent layer -----------------------------------------------------
 # The AI layer degrades gracefully: with none of these installed it runs a
-# deterministic offline reasoner + numpy cosine retrieval. Install the extras
-# below to enable Google Vertex AI Gemini reasoning and richer retrieval.
-#
+# deterministic offline reasoner + numpy cosine retrieval. With them installed
+# the multi-agent workflow runs on a native LangGraph StateGraph, the LLM layer
+# uses LangChain's ChatVertexAI, and root-cause analysis can run as a Google ADK
+# LlmAgent. Google Vertex AI Gemini activates when GOOGLE_CLOUD_PROJECT (+ creds)
+# is configured; otherwise the deterministic offline reasoner is used.
+
 # Google Vertex AI Gemini (LLM reasoning: RCA, remediation planning, risk)
-# google-cloud-aiplatform>=1.60
-#
+google-cloud-aiplatform>=1.60
+
 # Agent framework / orchestration (Google ADK + LangChain + LangGraph)
-# google-adk
-# langchain
-# langchain-google-vertexai
-# langgraph
-#
+google-adk
+langchain
+langchain-core
+langchain-google-vertexai
+langgraph
+
 # Vector database for hybrid retrieval (falls back to numpy cosine store)
 # chromadb
 #

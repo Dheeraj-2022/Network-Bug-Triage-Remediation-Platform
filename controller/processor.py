@@ -10,13 +10,17 @@ Controller Processor (full)
 - Invokes remediation via Ansible (controller.ansible_runner)
 - Audit logs remediation attempts and outcomes
 
-Usage (dry-run):
+Usage (dry-run, no Kafka - idle until killed; use tests/validate_pipeline.py --mode dry to feed events):
     python3 controller/processor.py --dry-run
 
-Usage (Kafka):
+Usage (Kafka, simulate Ansible):
+    python3 controller/processor.py --kafka localhost:9092 --dry-run
+
+Usage (Kafka, REAL Ansible playbook runs against infra/inventory.ini):
     python3 controller/processor.py --kafka localhost:9092
 
 Notes:
+- --dry-run only controls Ansible execution; Kafka consumption is enabled whenever --kafka is given
 - Requires controller/rules_engine.py, controller/nlp_parser.py, controller/triage_model.py
 - Ansible integration uses ansible-runner if present, otherwise subprocess to ansible-playbook
 """
@@ -47,8 +51,10 @@ except Exception:  # pragma: no cover - AI layer is optional
 # kafka import guarded
 try:
     from kafka import KafkaConsumer
+    from kafka.errors import NoBrokersAvailable
 except Exception:
     KafkaConsumer = None
+    NoBrokersAvailable = Exception
 
 LOG = logging.getLogger("nbt.processor")
 LOG.setLevel(logging.INFO)
@@ -59,6 +65,13 @@ LOG.addHandler(_handler)
 AUDIT_LOG_PATH = os.path.join(os.path.dirname(__file__), "..", "logs", "remediation_audit.log")
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "models", "xgb_model.joblib")
 PLAYBOOK_DIR = os.path.join(os.path.dirname(__file__), "..", "infra", "playbooks")
+KAFKA_CONNECT_TIMEOUT_SEC = int(os.environ.get("NBT_KAFKA_CONNECT_TIMEOUT", "60"))
+KAFKA_START_HINT = ("No Kafka broker reachable at %s. Start one with `docker compose up -d` "
+                    "and wait for it to finish booting, or fix --kafka host:port.")
+
+
+class KafkaUnavailable(RuntimeError):
+    """Raised when no broker could be reached within the connect timeout."""
 
 
 def iso_now():
@@ -108,26 +121,54 @@ def audit_log(entry: Dict[str, Any]):
 
 
 class Processor:
-    def __init__(self, kafka_bootstrap: Optional[List[str]] = None, topic: str = "telemetry.events", dry_run: bool = True):
+    """Event processor.
+
+    ``kafka_bootstrap`` controls *where events come from*: ``None`` means no
+    Kafka consumer is created (events are fed via ``process_event``), a list of
+    brokers enables consumption in ``run()``.
+
+    ``dry_run`` controls *whether Ansible really runs*: ``True`` prints the
+    playbook invocation instead of executing it.
+    """
+
+    def __init__(self, kafka_bootstrap: Optional[List[str]] = None, topic: str = "telemetry.events",
+                 dry_run: bool = True, connect_timeout_sec: int = KAFKA_CONNECT_TIMEOUT_SEC):
         self.dry_run = dry_run
         self.topic = topic
-        self.kafka_bootstrap = kafka_bootstrap or ["localhost:9092"]
+        self.kafka_bootstrap = kafka_bootstrap
+        self.consume = kafka_bootstrap is not None
         self.consumer = None
-        if not dry_run:
+        if self.consume:
             if KafkaConsumer is None:
-                raise RuntimeError("kafka-python required for consumer mode")
-            self.consumer = KafkaConsumer(
-                self.topic,
-                bootstrap_servers=self.kafka_bootstrap,
-                auto_offset_reset="earliest",
-                group_id="processor-group",
-                value_deserializer=lambda m: json.loads(m.decode("utf-8"))
-            )
+                raise RuntimeError("kafka-python required for consumer mode (pip install kafka-python)")
+            self.consumer = self._connect_consumer(connect_timeout_sec)
         self.store = SlidingStore()
         self.log_parser = LogParser()
         self.model = TriageModel()
         self.orchestrator = self._init_orchestrator()
         LOG.info("Processor initialized (dry_run=%s) kafka=%s topic=%s", self.dry_run, self.kafka_bootstrap, self.topic)
+
+    def _connect_consumer(self, timeout_sec: int):
+        """Create the consumer, retrying while the broker boots; raise KafkaUnavailable on timeout."""
+        deadline = time.monotonic() + max(0, timeout_sec)
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                return KafkaConsumer(
+                    self.topic,
+                    bootstrap_servers=self.kafka_bootstrap,
+                    auto_offset_reset="earliest",
+                    group_id="processor-group",
+                    value_deserializer=lambda m: json.loads(m.decode("utf-8")),
+                    api_version_auto_timeout_ms=5000,
+                )
+            except NoBrokersAvailable:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise KafkaUnavailable(KAFKA_START_HINT % self.kafka_bootstrap)
+                LOG.warning("Kafka broker not ready (attempt %d); retrying for another %ds", attempt, int(remaining))
+                time.sleep(min(3.0, remaining))
 
     @staticmethod
     def _init_orchestrator():
@@ -294,33 +335,49 @@ class Processor:
         return decision
 
     def run(self):
-        if self.dry_run:
-            LOG.info("Processor running in dry-run mode (no Kafka consumption). Use --kafka to enable")
+        if not self.consume:
+            LOG.info("Processor idle: no Kafka configured (use --kafka host:port). Ansible dry_run=%s", self.dry_run)
             while True:
                 time.sleep(5)
-        else:
-            LOG.info("Connecting to Kafka: %s", self.kafka_bootstrap)
+        LOG.info("Consuming from Kafka %s topic=%s (Ansible dry_run=%s)", self.kafka_bootstrap, self.topic, self.dry_run)
+        try:
             for msg in self.consumer:
                 try:
                     self.process_event(msg.value)
                 except Exception:
                     LOG.exception("Failed to process message")
+        finally:
+            self.consumer.close()
 
 
 def parse_args():
     p = argparse.ArgumentParser("processor")
-    p.add_argument("--kafka", help="Kafka bootstrap servers (comma separated)", default=None)
+    p.add_argument("--kafka", help="Kafka bootstrap servers (comma separated); enables consumption", default=None)
     p.add_argument("--topic", help="Kafka topic", default="telemetry.events")
-    p.add_argument("--dry-run", action="store_true", help="Dry-run (no Kafka/Ansible runs)")
+    p.add_argument("--dry-run", action="store_true", help="Simulate Ansible runs (Kafka consumption still happens if --kafka is set)")
+    p.add_argument("--kafka-timeout", type=int, default=KAFKA_CONNECT_TIMEOUT_SEC,
+                   help="Seconds to keep retrying the initial broker connection")
     return p.parse_args()
 
 
-def main():
+def main() -> int:
     args = parse_args()
-    bs = args.kafka.split(",") if args.kafka else None
-    processor = Processor(kafka_bootstrap=bs, topic=args.topic, dry_run=args.dry_run)
-    processor.run()
+    bs = [s.strip() for s in args.kafka.split(",") if s.strip()] if args.kafka else None
+    try:
+        processor = Processor(kafka_bootstrap=bs, topic=args.topic, dry_run=args.dry_run,
+                              connect_timeout_sec=args.kafka_timeout)
+    except KafkaUnavailable as e:
+        LOG.error("%s", e)
+        return 1
+    except RuntimeError as e:
+        LOG.error("%s", e)
+        return 2
+    try:
+        processor.run()
+    except KeyboardInterrupt:
+        LOG.info("Processor interrupted; shutting down")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

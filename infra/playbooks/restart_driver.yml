@@ -35,8 +35,6 @@
 
     - name: Backup module list
       shell: lsmod > {{ backup_dir }}/{{ inventory_hostname }}.lsmod || true
-      args:
-        warn: false
       when: host_targets is defined and host_targets | length > 0
 
     - name: Drain traffic (optional placeholder)
@@ -79,6 +77,4 @@
     - name: Log driver remediation
       shell: |
         echo "$(date -Is) Reloaded driver for host={{ inventory_hostname }} drivers={{ host_targets | map(attribute='driver') | list | join(',') }}" >> /var/log/network-bug-triage-remediation.log
-      args:
-        warn: false
       ignore_errors: true

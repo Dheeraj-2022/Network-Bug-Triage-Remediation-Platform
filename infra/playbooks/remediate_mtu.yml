@@ -40,8 +40,6 @@
           ip -o link show ${ifname} | awk '{print $5}' > {{ backup_dir }}/{{ inventory_hostname }}-${ifname}.mtu || true
         done
       when: host_targets is defined and host_targets | length > 0
-      args:
-        warn: false
       ignore_errors: true
 
     - name: Apply desired MTU (canary strategy)
@@ -52,8 +50,6 @@
       loop: "{{ host_targets | default([]) }}"
       register: mtu_apply
       failed_when: false
-      args:
-        warn: false
 
     - name: Verify MTU applied
       shell: ip -o link show {{ item.item.iface }} | awk '{print $5}'
@@ -74,6 +70,4 @@
       shell: |
         echo "$(date -Is) Remediated MTU={{ desired_mtu }} for iface={{ item.item.iface }} on host={{ inventory_hostname }} reason='{{ reason | default(\"auto\") }}'" >> /var/log/network-bug-triage-remediation.log
       loop: "{{ mtu_verify.results }}"
-      args:
-        warn: false
       ignore_errors: true

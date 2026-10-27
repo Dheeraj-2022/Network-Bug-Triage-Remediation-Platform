@@ -49,10 +49,10 @@ except Exception:
 
 try:
     from kafka import KafkaProducer
-except ImportError:
-    KafkaProducer = None
+    from kafka.errors import NoBrokersAvailable
 except Exception:
     KafkaProducer = None
+    NoBrokersAvailable = Exception
 
 # Constants
 DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.yaml")
@@ -214,6 +214,8 @@ class TelemetryProducer:
         self.buffering_cfg = buffering_cfg or {"enabled": False}
         self.buffer = None
         self.producer = None
+        self._last_connect_attempt = 0.0
+        self._connect_backoff_sec = 10
         if self.buffering_cfg.get("enabled"):
             path = self.buffering_cfg.get("path", DEFAULT_BUFFER_FILE)
             max_pending = self.buffering_cfg.get("max_pending", 10000)
@@ -221,49 +223,81 @@ class TelemetryProducer:
         if not self.dry_run:
             if KafkaProducer is None:
                 raise RuntimeError("kafka-python package required for real Kafka publishing")
-            # kafka-python producer basic config
+            if self._ensure_producer() is None and self.buffer is None:
+                raise RuntimeError(
+                    f"No Kafka broker reachable at {bootstrap_servers} and buffering is disabled; "
+                    "start Kafka (docker compose up -d) or enable agent.buffering in config.yaml"
+                )
+
+    def _ensure_producer(self):
+        """Return a connected KafkaProducer, (re)connecting with backoff; None if the broker is down."""
+        if self.producer is not None:
+            return self.producer
+        now = time.monotonic()
+        if now - self._last_connect_attempt < self._connect_backoff_sec:
+            return None
+        self._last_connect_attempt = now
+        try:
             self.producer = KafkaProducer(
-                bootstrap_servers=bootstrap_servers,
+                bootstrap_servers=self.bootstrap_servers,
                 value_serializer=lambda v: json.dumps(v).encode("utf-8"),
                 linger_ms=int(self.buffering_cfg.get("linger_ms", 100)) if isinstance(self.buffering_cfg.get("linger_ms"), int) else 100,
-                retries=int(self.buffering_cfg.get("retries", 5)) if self.buffering_cfg.get("retries") is not None else 5
+                retries=int(self.buffering_cfg.get("retries", 5)) if self.buffering_cfg.get("retries") is not None else 5,
+                api_version_auto_timeout_ms=5000,
+                max_block_ms=10000,
             )
+            logger.info("Connected to Kafka at %s", self.bootstrap_servers)
+        except NoBrokersAvailable:
+            logger.warning("Kafka broker unavailable at %s; events will be buffered locally (%s)",
+                           self.bootstrap_servers, self.buffer.path if self.buffer else "buffering disabled")
+            self.producer = None
+        return self.producer
 
     def send(self, event: Dict[str, Any]) -> bool:
         if self.dry_run:
             logger.info("DRY-RUN event -> %s", json.dumps(event))
             return True
+        producer = self._ensure_producer()
+        if producer is None:
+            return self._buffer_event(event)
         try:
-            fut = self.producer.send(self.topic, event)
+            fut = producer.send(self.topic, event)
             fut.get(timeout=10)
             logger.debug("Published event %s to %s", event.get("event_id"), self.topic)
             return True
         except Exception:
             logger.exception("Failed to publish to Kafka; buffering locally if enabled")
-            if self.buffer:
-                try:
-                    self.buffer.push(event)
-                    return True
-                except Exception:
-                    logger.exception("Buffer push failed")
-                    return False
+            return self._buffer_event(event)
+
+    def _buffer_event(self, event: Dict[str, Any]) -> bool:
+        if not self.buffer:
+            return False
+        try:
+            self.buffer.push(event)
+            return True
+        except Exception:
+            logger.exception("Buffer push failed")
             return False
 
     def flush_buffer(self):
         if not self.buffer or self.dry_run:
             return
+        if self.buffer.pending_count() == 0:
+            return
+        producer = self._ensure_producer()
+        if producer is None:
+            return
         pending = self.buffer.pop_all()
         if not pending:
             return
         logger.info("Flushing %d buffered events to Kafka", len(pending))
-        for ev in pending:
+        for idx, ev in enumerate(pending):
             try:
-                fut = self.producer.send(self.topic, ev)
+                fut = producer.send(self.topic, ev)
                 fut.get(timeout=10)
             except Exception:
                 logger.exception("Failed to send buffered event; re-buffering remaining")
-                # re-buffer rest (append)
-                for r in pending[pending.index(ev) :]:
+                for r in pending[idx:]:
                     self.buffer.push(r)
                 return
 
@@ -353,6 +387,9 @@ def collect_rdma_stats() -> Dict[str, int]:
         return res
     except FileNotFoundError:
         logger.debug("rdma CLI not present; skipping RDMA counters")
+    except subprocess.CalledProcessError as e:
+        # Typical on hosts without RDMA devices / rdma netlink support; not an error worth a traceback.
+        logger.debug("rdma dev show exited %s; no RDMA counters available", e.returncode)
     except Exception:
         logger.exception("Failed to collect RDMA counters")
     return res
@@ -426,8 +463,10 @@ def configure_logging(cfg: Config):
 
 def main_loop(cfg: Config, args):
     producer_cfg = cfg.get("kafka") or {}
-    buffering_cfg = cfg.get("agent", "buffering") or {}
+    buffering_cfg = dict(cfg.get("agent", "buffering") or {})
     bootstrap = producer_cfg.get("bootstrap_servers", ["localhost:9092"])
+    if isinstance(bootstrap, str):
+        bootstrap = [s.strip() for s in bootstrap.split(",") if s.strip()]
     topic = producer_cfg.get("topic", "telemetry.events")
     dry = args.dry_run or cfg.get("agent", "dry_run", default=True)
     host_id = args.host_id or cfg.get("agent", "host_id")
@@ -436,7 +475,11 @@ def main_loop(cfg: Config, args):
     buffering_cfg["linger_ms"] = producer_cfg.get("linger_ms", 100)
     buffering_cfg["retries"] = producer_cfg.get("retries", 5)
 
-    producer = TelemetryProducer(bootstrap, topic, dry_run=dry, buffering_cfg=buffering_cfg)
+    try:
+        producer = TelemetryProducer(bootstrap, topic, dry_run=dry, buffering_cfg=buffering_cfg)
+    except RuntimeError as e:
+        logger.error("%s", e)
+        return 2
     logger.info("Agent starting (dry_run=%s) host=%s interval=%ds", dry, host_id or socket.gethostname(), interval)
 
     stop_event = threading.Event()

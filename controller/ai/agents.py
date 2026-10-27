@@ -107,6 +107,7 @@ class AgentDeps:
     retriever: Any
     memory: Any
     config: Any
+    adk: Any = None  # optional google.adk LlmAgent reasoner for RCA
 
 
 # ---------------------------------------------------------------------------
@@ -248,15 +249,7 @@ class RootCauseAnalysisAgent(BaseAgent):
                 host=state.signals.get("host"), fault_domain=provisional
             )
         fallback = self._heuristic_rca(state, provisional, memory_summary)
-        rca = self.deps.llm.generate_json(
-            "root_cause_analysis",
-            event_json=json.dumps(state.event, default=str)[:4000],
-            ml_json=json.dumps(state.ml, default=str),
-            rule_json=json.dumps(state.rule, default=str),
-            context=state.context_text[:6000],
-            memory=memory_summary,
-            _fallback=fallback,
-        )
+        rca = self._reason(state, memory_summary, fallback)
         # Ensure required keys always present.
         for key, default in fallback.items():
             rca.setdefault(key, default)
@@ -271,6 +264,47 @@ class RootCauseAnalysisAgent(BaseAgent):
             f"(conf={rca.get('confidence')}, backend={rca.get('_backend')})",
         )
         return state
+
+    def _reason(
+        self,
+        state: WorkflowState,
+        memory_summary: str,
+        fallback: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """Prefer the ADK LlmAgent, then the LangChain/Vertex LLM, then heuristic."""
+        from controller.ai.llm import _extract_json  # local import avoids cycle
+
+        adk = self.deps.adk
+        if adk is not None and getattr(adk, "available", False):
+            try:
+                from controller.ai.prompts import PROMPTS
+
+                system = PROMPTS.system("root_cause_analysis")
+                rendered = PROMPTS.render(
+                    "root_cause_analysis",
+                    event_json=json.dumps(state.event, default=str)[:4000],
+                    ml_json=json.dumps(state.ml, default=str),
+                    rule_json=json.dumps(state.rule, default=str),
+                    context=state.context_text[:6000],
+                    memory=memory_summary,
+                )
+                parsed = _extract_json(adk.analyze(system, rendered))
+                if parsed:
+                    parsed["_backend"] = "google-adk"
+                    return parsed
+                LOG.warning("ADK RCA returned no JSON; falling back to LLM")
+            except Exception:
+                LOG.exception("ADK RCA failed; falling back to LLM")
+
+        return self.deps.llm.generate_json(
+            "root_cause_analysis",
+            event_json=json.dumps(state.event, default=str)[:4000],
+            ml_json=json.dumps(state.ml, default=str),
+            rule_json=json.dumps(state.rule, default=str),
+            context=state.context_text[:6000],
+            memory=memory_summary,
+            _fallback=fallback,
+        )
 
     def _heuristic_rca(
         self, state: WorkflowState, provisional: str, memory_summary: str

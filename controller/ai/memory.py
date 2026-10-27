@@ -135,7 +135,7 @@ class MemoryStore:
             self._update_pattern(incident)
 
     def _update_pattern(self, incident: Dict[str, Any]) -> None:
-        domain = incident.get("fault_domain", "UNKNOWN")
+        domain = incident.get("fault_domain") or "UNKNOWN"
         playbook = incident.get("playbook") or "none"
         resolved = bool(incident.get("resolved"))
         bucket = self._patterns.setdefault(
@@ -199,7 +199,7 @@ class MemoryStore:
         best_rate = -1.0
         with self._lock:
             for key, stats in self._patterns.items():
-                if "::" not in key or not key.startswith(f"{fault_domain}::"):
+                if not isinstance(key, str) or "::" not in key or not key.startswith(f"{fault_domain}::"):
                     continue
                 playbook = key.split("::", 1)[1]
                 if playbook == "none" or stats.get("total", 0) == 0:
@@ -240,7 +240,7 @@ class MemoryStore:
                 "hosts_tracked": len(self._host_history),
                 "conversations": len(self._conversations),
                 "fault_domains": len(
-                    [k for k in self._patterns if "::" not in k]
+                    [k for k in self._patterns if isinstance(k, str) and "::" not in k]
                 ),
             }
 

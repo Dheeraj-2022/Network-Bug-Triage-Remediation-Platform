@@ -64,11 +64,18 @@ def _extract_json(text: str) -> Dict[str, Any]:
 # Backends
 # ---------------------------------------------------------------------------
 class VertexGeminiBackend:
-    """Google Vertex AI Gemini backend."""
+    """Google Vertex AI Gemini backend.
+
+    Prefers the LangChain ``ChatVertexAI`` integration (so the LLM layer runs on
+    LangChain) and falls back to the raw ``vertexai`` SDK if LangChain is not
+    installed. Either path targets the same Gemini model on Vertex AI.
+    """
 
     def __init__(self, cfg: AIConfig):
         self.cfg = cfg
         self._model = None
+        self._chat = None  # LangChain ChatVertexAI handle when used
+        self.impl = "none"  # langchain-vertex | vertexai-sdk | none
         self._init_error: Optional[str] = None
         self._initialise()
 
@@ -77,6 +84,53 @@ class VertexGeminiBackend:
         if not v.enabled or not v.project:
             self._init_error = "Vertex disabled or no project configured"
             return
+        if self._init_langchain(v):
+            return
+        self._init_raw_sdk(v)
+
+    def _load_credentials(self, v: Any) -> Any:
+        if not v.credentials_path:
+            return None
+        try:
+            from google.oauth2 import service_account  # type: ignore
+
+            return service_account.Credentials.from_service_account_file(
+                v.credentials_path
+            )
+        except Exception:
+            LOG.warning(
+                "Could not load Vertex credentials from %s; relying on "
+                "Application Default Credentials",
+                v.credentials_path,
+            )
+            return None
+
+    def _init_langchain(self, v: Any) -> bool:
+        try:
+            from langchain_google_vertexai import ChatVertexAI  # type: ignore
+
+            self._chat = ChatVertexAI(
+                model=v.model,
+                project=v.project,
+                location=v.location,
+                temperature=v.temperature,
+                max_output_tokens=v.max_output_tokens,
+                credentials=self._load_credentials(v),
+            )
+            self._model = self._chat
+            self.impl = "langchain-vertex"
+            LOG.info(
+                "Vertex backend ready via LangChain ChatVertexAI "
+                "(project=%s model=%s)",
+                v.project,
+                v.model,
+            )
+            return True
+        except Exception as exc:
+            LOG.warning("LangChain Vertex init failed (%s); trying raw SDK", exc)
+            return False
+
+    def _init_raw_sdk(self, v: Any) -> None:
         try:
             import vertexai  # type: ignore
             from vertexai.generative_models import GenerativeModel  # type: ignore
@@ -85,25 +139,14 @@ class VertexGeminiBackend:
                 "project": v.project,
                 "location": v.location,
             }
-            if v.credentials_path:
-                try:
-                    from google.oauth2 import service_account  # type: ignore
-
-                    init_kwargs["credentials"] = (
-                        service_account.Credentials.from_service_account_file(
-                            v.credentials_path
-                        )
-                    )
-                except Exception:
-                    LOG.warning(
-                        "Could not load Vertex credentials from %s; relying on "
-                        "Application Default Credentials",
-                        v.credentials_path,
-                    )
+            creds = self._load_credentials(v)
+            if creds is not None:
+                init_kwargs["credentials"] = creds
             vertexai.init(**init_kwargs)
             self._model = GenerativeModel(v.model)
+            self.impl = "vertexai-sdk"
             LOG.info(
-                "Vertex AI Gemini backend ready (project=%s model=%s)",
+                "Vertex AI Gemini backend ready via SDK (project=%s model=%s)",
                 v.project,
                 v.model,
             )
@@ -119,6 +162,23 @@ class VertexGeminiBackend:
     def generate(self, system: str, prompt: str) -> str:
         if self._model is None:
             raise RuntimeError(f"Vertex backend not available: {self._init_error}")
+        if self.impl == "langchain-vertex":
+            from langchain_core.messages import (  # type: ignore
+                HumanMessage,
+                SystemMessage,
+            )
+
+            resp = self._chat.invoke(
+                [SystemMessage(content=system), HumanMessage(content=prompt)]
+            )
+            content = getattr(resp, "content", "")
+            if isinstance(content, list):  # some models return content parts
+                content = "".join(
+                    part.get("text", "") if isinstance(part, dict) else str(part)
+                    for part in content
+                )
+            return content or ""
+
         from vertexai.generative_models import GenerationConfig  # type: ignore
 
         v = self.cfg.vertex
@@ -190,6 +250,11 @@ class LLMClient:
     @property
     def backend_name(self) -> str:
         return "vertex-gemini" if self._vertex.available else "heuristic"
+
+    @property
+    def backend_impl(self) -> str:
+        """How the active backend is implemented (e.g. langchain-vertex)."""
+        return self._vertex.impl if self._vertex.available else "heuristic"
 
     @property
     def uses_llm(self) -> bool:

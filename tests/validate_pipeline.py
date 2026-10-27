@@ -21,6 +21,7 @@ import random
 import sys
 import time
 from datetime import datetime, timezone
+from typing import List
 
 # attempt to import controller. If package imports fail, adjust sys.path
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -37,10 +38,16 @@ except Exception:
 
 try:
     from kafka import KafkaProducer
+    from kafka.errors import KafkaError, NoBrokersAvailable
 except Exception:
     KafkaProducer = None
+    KafkaError = NoBrokersAvailable = Exception
 
 EVENT_TOPIC = "telemetry.events"
+KAFKA_START_HINT = (
+    "No Kafka broker reachable. Start one with `docker compose up -d` (ZooKeeper + Kafka on "
+    "localhost:9092) and wait ~20s for the broker to finish booting, or pass --kafka host:port."
+)
 
 
 def iso_now():
@@ -99,14 +106,14 @@ def make_synthetic_event(host: str, inject_error: bool = False):
     return ev
 
 
-def run_dry(count: int):
+def run_dry(count: int) -> int:
     if not CONTROLLER_AVAILABLE:
         print("Controller modules not importable. Ensure repository root is on PYTHONPATH.")
         print("Attempting to run a light local validation (no controller).")
         for i in range(count):
             ev = make_synthetic_event(f"local-{i}", inject_error=(i % 2 == 0))
             print(json.dumps(ev, indent=2))
-        return
+        return 1
 
     proc = Processor(dry_run=True)
     successes = 0
@@ -118,31 +125,70 @@ def run_dry(count: int):
         if dec.get("rule", {}).get("action") == "remediate" or dec.get("ml", {}).get("priority_score", 0) > 0.5:
             successes += 1
     print(f"\nDry-run validation: {successes}/{count} events caused remediation or high-priority ML score.")
+    return 0
 
 
-def run_kafka(count: int, kafka_servers: str):
+def connect_producer(servers: List[str], wait_sec: int):
+    """Connect to Kafka, retrying until ``wait_sec`` elapses (broker may still be booting)."""
+    deadline = time.monotonic() + max(0, wait_sec)
+    attempt = 0
+    while True:
+        attempt += 1
+        try:
+            return KafkaProducer(
+                bootstrap_servers=servers,
+                value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+                api_version_auto_timeout_ms=5000,
+                request_timeout_ms=10000,
+                max_block_ms=10000,
+            )
+        except NoBrokersAvailable:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return None
+            print(f"  broker not ready (attempt {attempt}); retrying for another {int(remaining)}s ...")
+            time.sleep(min(3, remaining))
+
+
+def run_kafka(count: int, kafka_servers: str, wait_sec: int, topic: str) -> int:
     if KafkaProducer is None:
         print("kafka-python not installed. Install requirements and try again.")
-        return
-    servers = kafka_servers.split(",")
+        return 2
+    servers = [s.strip() for s in kafka_servers.split(",") if s.strip()]
     print(f"Connecting to Kafka at {servers}")
-    producer = KafkaProducer(bootstrap_servers=servers, value_serializer=lambda v: json.dumps(v).encode("utf-8"))
-    for i in range(count):
-        ev = make_synthetic_event(f"kafka-vm-{i+1}", inject_error=(i % 2 == 0))
-        print(f"Publishing event {ev['event_id']} host={ev['host']}")
-        producer.send(EVENT_TOPIC, ev)
+    producer = connect_producer(servers, wait_sec)
+    if producer is None:
+        print(f"ERROR: {KAFKA_START_HINT}")
+        return 1
+    published = 0
+    try:
+        for i in range(count):
+            ev = make_synthetic_event(f"kafka-vm-{i+1}", inject_error=(i % 2 == 0))
+            print(f"Publishing event {ev['event_id']} host={ev['host']}")
+            meta = producer.send(topic, ev).get(timeout=15)
+            print(f"  -> {meta.topic}[{meta.partition}] offset={meta.offset}")
+            published += 1
         producer.flush()
-    print("Published all synthetic events.")
+    except KafkaError as e:
+        print(f"ERROR: publish failed after {published}/{count} events: {e}")
+        return 1
+    finally:
+        producer.close()
+    print(f"Published all {published} synthetic events to topic '{topic}'.")
+    print("Consume them with: python -m controller.processor --kafka "
+          f"{kafka_servers} --dry-run")
+    return 0
 
 
-def run_localfile(count: int, dest: str):
-    os.makedirs(os.path.dirname(dest), exist_ok=True)
+def run_localfile(count: int, dest: str) -> int:
+    os.makedirs(os.path.dirname(dest) or ".", exist_ok=True)
     arr = []
     for i in range(count):
         arr.append(make_synthetic_event(f"file-vm-{i+1}", inject_error=(i % 2 == 0)))
     with open(dest, "w") as fh:
         json.dump(arr, fh, indent=2)
     print(f"Wrote {count} synthetic events to {dest}")
+    return 0
 
 
 def parse_args():
@@ -150,20 +196,24 @@ def parse_args():
     p.add_argument("--mode", choices=["dry", "kafka", "localfile"], default="dry")
     p.add_argument("--count", type=int, default=4)
     p.add_argument("--kafka", type=str, default="localhost:9092", help="Kafka bootstrap servers (comma separated)")
+    p.add_argument("--topic", type=str, default=EVENT_TOPIC, help="Kafka topic to publish to")
+    p.add_argument("--wait", type=int, default=30,
+                   help="Seconds to keep retrying the Kafka connection while the broker boots")
     p.add_argument("--outfile", type=str, default="data/sample_events.json")
     return p.parse_args()
 
 
-def main():
+def main() -> int:
     args = parse_args()
     if args.mode == "dry":
-        run_dry(args.count)
-    elif args.mode == "kafka":
-        run_kafka(args.count, args.kafka)
-    elif args.mode == "localfile":
-        run_localfile(args.count, args.outfile)
-    else:
-        print("Unknown mode")
+        return run_dry(args.count)
+    if args.mode == "kafka":
+        return run_kafka(args.count, args.kafka, args.wait, args.topic)
+    if args.mode == "localfile":
+        return run_localfile(args.count, args.outfile)
+    print("Unknown mode")
+    return 2
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -8,11 +8,12 @@ Implements the Google ADK / LangGraph-style workflow that threads a shared
     Planner -> Telemetry -> Retriever -> KnowledgeBase -> RootCause
             -> Remediation -> (Human Approval gate) -> Validation -> Audit
 
-The orchestrator is deliberately self-contained (no hard dependency on the
-``langgraph`` package) so it runs anywhere, but it is structured as nodes +
-conditional edges so it can be swapped for a native LangGraph ``StateGraph`` with
-minimal change. If ``langgraph`` is installed it is used to build the graph;
-otherwise the built-in sequential executor runs the identical node functions.
+The orchestrator compiles a native LangGraph :class:`~langgraph.graph.StateGraph`
+over the shared :class:`WorkflowState` when ``langgraph`` is installed, wiring
+each agent as a graph node with conditional edges (escalation branch + a
+human-approval interrupt). When ``langgraph`` is absent it falls back to a
+built-in sequential executor that runs the identical node functions, so the
+pipeline behaves the same in air-gapped environments.
 
 Human approval
 --------------
@@ -26,6 +27,7 @@ from __future__ import annotations
 
 import logging
 import uuid
+from dataclasses import fields as dataclass_fields
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 
@@ -76,6 +78,7 @@ class Orchestrator:
             retriever=self.retriever,
             memory=self.memory,
             config=self.cfg,
+            adk=self._build_adk(),
         )
         self.agents = {
             "planner": PlannerAgent(deps),
@@ -87,13 +90,28 @@ class Orchestrator:
             "validation": ValidationAgent(deps),
             "audit": AuditAgent(deps),
         }
+        # Compile a native LangGraph StateGraph when the package is available;
+        # otherwise fall back to the built-in sequential executor.
+        self._graph = self._build_graph()
+        self.executor_kind = "langgraph" if self._graph is not None else "sequential"
         LOG.info(
-            "Orchestrator ready (llm=%s, retriever=%s, memory=%s, approval=%s)",
+            "Orchestrator ready (llm=%s, retriever=%s, memory=%s, approval=%s, "
+            "executor=%s)",
             self.llm.backend_name,
             getattr(self.retriever, "backend_name", "none"),
             "on" if self.memory else "off",
             self.cfg.require_human_approval,
+            self.executor_kind,
         )
+
+    def _build_adk(self) -> Any:
+        try:
+            from controller.ai.adk_integration import get_adk_reasoner
+
+            return get_adk_reasoner(self.cfg)
+        except Exception:
+            LOG.exception("ADK reasoner init failed; continuing without ADK")
+            return None
 
     # ------------------------------------------------------------------
     @property
@@ -104,6 +122,8 @@ class Orchestrator:
         return {
             "enabled": self.cfg.enabled,
             "llm_backend": self.llm.backend_name,
+            "llm_impl": getattr(self.llm, "backend_impl", None),
+            "executor": self.executor_kind,
             "uses_llm": self.llm.uses_llm,
             "vertex_model": self.cfg.vertex.model if self.llm.uses_llm else None,
             "retriever_backend": getattr(self.retriever, "backend_name", None),
@@ -172,7 +192,86 @@ class Orchestrator:
     # ------------------------------------------------------------------
     # Graph execution
     # ------------------------------------------------------------------
+    def _build_graph(self) -> Any:
+        """Compile a native LangGraph ``StateGraph`` over :class:`WorkflowState`.
+
+        Returns ``None`` if ``langgraph`` is not installed, in which case the
+        built-in sequential executor runs the identical node functions.
+        """
+        try:
+            from langgraph.graph import END, StateGraph
+        except Exception:
+            return None
+
+        def node(name: str) -> Callable[[WorkflowState], Dict[str, Any]]:
+            agent = self.agents[name]
+
+            def _run(state: WorkflowState) -> Dict[str, Any]:
+                updated = agent.run(state)
+                # Shallow field copy: a deep asdict() would convert nested
+                # RetrievedItem dataclasses into plain dicts and break later nodes.
+                return {
+                    f.name: getattr(updated, f.name)
+                    for f in dataclass_fields(WorkflowState)
+                }
+
+            return _run
+
+        def after_telemetry(state: WorkflowState) -> str:
+            return "retriever" if state.plan.get("escalate") else "audit"
+
+        def after_remediation(state: WorkflowState) -> str:
+            # Human-approval gate: stop before validation if approval pending.
+            if state.remediation.get("status") == "pending_approval":
+                return "pause"
+            return "validation"
+
+        g = StateGraph(WorkflowState)
+        for name in (
+            "planner",
+            "telemetry",
+            "retriever",
+            "knowledge",
+            "rca",
+            "remediation",
+            "validation",
+            "audit",
+        ):
+            g.add_node(name, node(name))
+
+        g.set_entry_point("planner")
+        g.add_edge("planner", "telemetry")
+        g.add_conditional_edges(
+            "telemetry", after_telemetry, {"retriever": "retriever", "audit": "audit"}
+        )
+        g.add_edge("retriever", "knowledge")
+        g.add_edge("knowledge", "rca")
+        g.add_edge("rca", "remediation")
+        g.add_conditional_edges(
+            "remediation",
+            after_remediation,
+            {"validation": "validation", "pause": END},
+        )
+        g.add_edge("validation", "audit")
+        g.add_edge("audit", END)
+        return g.compile()
+
     def _execute(self, state: WorkflowState) -> WorkflowState:
+        if self._graph is not None:
+            try:
+                return self._run_graph(state)
+            except Exception:
+                LOG.exception("LangGraph execution failed; using sequential executor")
+        return self._execute_sequential(state)
+
+    def _run_graph(self, state: WorkflowState) -> WorkflowState:
+        result = self._graph.invoke(state)
+        if isinstance(result, WorkflowState):
+            return result
+        # LangGraph returns the merged channel mapping; rebuild the dataclass.
+        return WorkflowState(**{k: v for k, v in result.items()})
+
+    def _execute_sequential(self, state: WorkflowState) -> WorkflowState:
         # Planner always runs first and decides the remaining steps.
         state = self.agents["planner"].run(state)
         steps: List[str] = state.plan.get("steps", ["telemetry", "audit"])
