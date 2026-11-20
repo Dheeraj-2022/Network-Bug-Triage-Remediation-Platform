@@ -1,199 +1,174 @@
-import React, { useState } from 'react';
-import {
-  Clock,
-  Download,
-  FileText,
-  Filter,
-  Search,
-  Shield,
-  UserCheck,
-} from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Badge, Banner, EmptyState, PageHeader, Pagination, Panel, SearchInput, SkeletonRows, usePageClamp } from '../components/ui';
+import { Incident } from '../lib/incidents';
+import { formatDateTime, parseTs } from '../lib/format';
+import { hrefFor } from '../lib/routes';
 import { AuditEntry } from '../types';
+import { CommonPageProps } from './common';
 
-interface AuditTrailPageProps {
+interface Props extends CommonPageProps {
   auditLog: AuditEntry[];
+  incidents: Incident[];
 }
 
-export const AuditTrailPage: React.FC<AuditTrailPageProps> = ({ auditLog }) => {
+const PAGE_SIZE = 30;
+
+export const AuditTrailPage: React.FC<Props> = ({ auditLog, incidents, loaded }) => {
+  const [host, setHost] = useState('');
+  const [playbook, setPlaybook] = useState('');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
 
-  // Realistic chronological audit sequence from user request
-  const staticAuditTimeline = [
-    { time: '14:34:21', event: 'INC-2048', type: 'APPROVAL', actor: 's.vance@noc-eng', desc: 'Remediation approved (AS65001 graceful BGP drain & Gi0/24 optical recalibration)' },
-    { time: '14:33:04', event: 'INC-2048', type: 'GATE', actor: 'ApprovalAgent', desc: 'Human approval requested (Lock #POL-OPC-9 enforced on Core Transit link)' },
-    { time: '14:32:11', event: 'INC-2048', type: 'PROPOSAL', actor: 'RemediationAgent', desc: 'Remediation proposed: PR-NET-BGP-DRAIN-AND-CYCLE' },
-    { time: '14:32:10', event: 'INC-2048', type: 'RCA', actor: 'RcaAgent', desc: 'RCA generated: Optical SFP+ Transceiver diode budget loss (-19.2 dBm)' },
-    { time: '14:32:09', event: 'INC-2048', type: 'CLASSIFY', actor: 'TriageModel', desc: 'ML classification completed (Confidence: 94.2%, Class: HARDWARE_PHYSICAL)' },
-    { time: '14:32:08', event: 'INC-2048', type: 'DETECTION', actor: 'DetectionAgent', desc: 'INC-2048 detected: Abnormal packet loss spike (34.2%) on Router R-204:Gi0/24' },
-  ];
+  const incidentByEvent = useMemo(() => new Map(incidents.filter((i) => i.eventId).map((i) => [i.eventId!, i])), [incidents]);
+  const hosts = useMemo(() => [...new Set(auditLog.map((a) => a.host).filter((h): h is string => !!h))].sort(), [auditLog]);
+  const playbooks = useMemo(() => [...new Set(auditLog.map((a) => a.playbook).filter((p): p is string => !!p))].sort(), [auditLog]);
 
-  const liveTimeline = auditLog.map((a) => ({
-    time: a.ts ? a.ts.slice(11, 19) : '--',
-    event: a.event_id || 'AUDIT-EVT',
-    type: 'REMEDIATION',
-    actor: 'AnsibleRunner',
-    desc: `Remediation executed on ${a.host || 'node'}: ${a.playbook || 'remediate_mtu.yml'} (${a.reason || 'Threshold breach'})`,
-  }));
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return [...auditLog]
+      .sort((a, b) => (parseTs(b.ts)?.getTime() ?? 0) - (parseTs(a.ts)?.getTime() ?? 0))
+      .filter((a) => {
+        if (host && a.host !== host) return false;
+        if (playbook && a.playbook !== playbook) return false;
+        if (q && ![a.event_id, a.host, a.playbook, a.reason, a.status].filter(Boolean).join(' ').toLowerCase().includes(q)) return false;
+        return true;
+      });
+  }, [auditLog, host, playbook, search]);
 
-  const combined = [...liveTimeline, ...staticAuditTimeline];
-
-  const filtered = combined.filter((item) => {
-    if (search) {
-      const q = search.toLowerCase();
-      return item.event.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q) || item.actor.toLowerCase().includes(q);
-    }
-    return true;
-  });
+  usePageClamp(page, setPage, filtered.length, PAGE_SIZE);
+  const pageItems = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const filtersActive = !!(host || playbook || search);
+  const dryRun = auditLog.some((a) => /dry/i.test(a.status || ''));
+  const reset = () => {
+    setHost('');
+    setPlaybook('');
+    setSearch('');
+  };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      {/* Page Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              padding: '0.15rem 0.5rem',
-              backgroundColor: '#131922',
-              border: '1px solid #1f2838',
-              borderRadius: '2px',
-              fontSize: '0.625rem',
-              fontFamily: 'var(--font-mono)',
-              color: '#38bdf8',
-              fontWeight: 600,
-              marginBottom: '0.4rem',
-            }}
-          >
-            IMMUTABLE SECURITY & OPERATIONAL LEDGER
-          </div>
-          <h1 style={{ fontSize: '1.45rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#f8fafc' }}>
-            NOC Chronological Audit Trail
-          </h1>
-          <p style={{ fontSize: '0.775rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-            Cryptographically timestamped telemetry events, model triage classifications, human sign-offs, and remediation playbooks.
-          </p>
-        </div>
+    <>
+      <PageHeader
+        title="Execution log"
+        description="Append-only record of every playbook the controller triggered, with the reason and the originating event."
+      />
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button className="noc-btn noc-btn-outline" style={{ height: '32px' }}>
-            <Download size={13} />
-            Export Audit Ledger
-          </button>
-        </div>
-      </div>
+      {dryRun && (
+        <Banner title="Playbooks run in dry-run mode">
+          The API controller records playbook triggers without applying changes to hosts. Use{' '}
+          <span className="mono">ansible-playbook</span> against <span className="mono">infra/inventory.ini</span> to execute for real.
+        </Banner>
+      )}
 
-      {/* Search Filter */}
-      <div
-        className="noc-card"
-        style={{
-          padding: '0.65rem 0.85rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
+      <Panel
+        flush
+        toolbar={
+          <>
+            <select className="select" value={host} onChange={(e) => setHost(e.target.value)} aria-label="Host">
+              <option value="">All hosts</option>
+              {hosts.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
+            </select>
+            <select className="select" value={playbook} onChange={(e) => setPlaybook(e.target.value)} aria-label="Playbook">
+              <option value="">All playbooks</option>
+              {playbooks.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+            <div style={{ flex: 1 }} />
+            <SearchInput value={search} onChange={setSearch} placeholder="Event, reason, status" width={240} />
+          </>
+        }
+        footer={
+          filtered.length > 0 ? (
+            <>
+              {filtersActive ? (
+                <button className="btn-link" onClick={reset}>
+                  Clear filters
+                </button>
+              ) : (
+                <span>Newest first</span>
+              )}
+              <div className="row">
+                <Pagination page={page} pageSize={PAGE_SIZE} total={filtered.length} onPage={setPage} />
+              </div>
+            </>
+          ) : undefined
+        }
       >
-        <div style={{ position: 'relative', width: '380px' }}>
-          <Search
-            size={12}
-            style={{ position: 'absolute', left: '9px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}
-          />
-          <input
-            type="text"
-            className="noc-input"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search audit trail, actor, incident..."
-            style={{ width: '100%', paddingLeft: '28px', height: '28px', fontSize: '0.75rem' }}
-          />
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th style={{ width: 200 }}>Timestamp (UTC)</th>
+                <th style={{ width: 110 }}>Host</th>
+                <th style={{ width: 200 }}>Playbook</th>
+                <th>Trigger reason</th>
+                <th style={{ width: 150 }}>Status</th>
+                <th style={{ width: 120 }}>Incident</th>
+              </tr>
+            </thead>
+            {!loaded ? (
+              <SkeletonRows rows={8} cols={6} />
+            ) : pageItems.length === 0 ? (
+              <tbody>
+                <tr>
+                  <td colSpan={6} style={{ padding: 0 }}>
+                    {auditLog.length === 0 ? (
+                      <EmptyState title="No playbooks have been triggered" description="Entries are written when a triage decision selects a remediation playbook." />
+                    ) : (
+                      <EmptyState
+                        compact
+                        title="No entries match these filters"
+                        actions={
+                          <button className="btn btn-sm" onClick={reset}>
+                            Clear filters
+                          </button>
+                        }
+                      />
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            ) : (
+              <tbody>
+                {pageItems.map((a, idx) => {
+                  const inc = a.event_id ? incidentByEvent.get(a.event_id) : undefined;
+                  return (
+                    <tr key={`${a.ts}-${idx}`}>
+                      <td className="num nowrap muted">{formatDateTime(a.ts).replace(' UTC', '')}</td>
+                      <td className="mono nowrap">{a.host || '—'}</td>
+                      <td className="mono nowrap">{a.playbook || '—'}</td>
+                      <td style={{ maxWidth: 0 }}>
+                        <div className="mono truncate" title={a.reason}>
+                          {a.reason || '—'}
+                        </div>
+                        {a.event_id && (
+                          <a className="cell-secondary mono truncate" style={{ display: 'block' }} href={hrefFor('events', undefined, { event: a.event_id })}>
+                            {a.event_id}
+                          </a>
+                        )}
+                      </td>
+                      <td className="nowrap">
+                        <Badge tone={/fail|error/i.test(a.status || '') ? 'crit' : /complete|success|ok/i.test(a.status || '') ? 'ok' : 'info'}>
+                          {a.status || 'recorded'}
+                        </Badge>
+                      </td>
+                      <td className="nowrap">
+                        {inc ? <a href={hrefFor('incident-detail', inc.key)}>View · {inc.severity}</a> : <span className="subtle">—</span>}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            )}
+          </table>
         </div>
-
-        <span style={{ fontSize: '0.6875rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-          {filtered.length} Recorded Entries
-        </span>
-      </div>
-
-      {/* Timeline List */}
-      <div className="noc-card">
-        <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-          {filtered.map((item, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '1rem',
-                padding: '0.65rem 0.85rem',
-                backgroundColor: '#0c0f15',
-                border: '1px solid #1a2230',
-                borderRadius: '3px',
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.75rem',
-                  color: '#38bdf8',
-                  fontWeight: 700,
-                  width: '75px',
-                  flexShrink: 0,
-                }}
-              >
-                {item.time}
-              </div>
-
-              <div style={{ width: '100px', flexShrink: 0 }}>
-                <span
-                  className="noc-badge"
-                  style={{
-                    backgroundColor:
-                      item.type === 'APPROVAL'
-                        ? 'rgba(16, 185, 129, 0.15)'
-                        : item.type === 'GATE'
-                        ? 'rgba(245, 158, 11, 0.15)'
-                        : 'rgba(56, 189, 248, 0.12)',
-                    color:
-                      item.type === 'APPROVAL'
-                        ? '#10b981'
-                        : item.type === 'GATE'
-                        ? '#f59e0b'
-                        : '#38bdf8',
-                    border: `1px solid ${
-                      item.type === 'APPROVAL'
-                        ? '#10b981'
-                        : item.type === 'GATE'
-                        ? '#f59e0b'
-                        : 'rgba(56, 189, 248, 0.3)'
-                    }`,
-                  }}
-                >
-                  {item.type}
-                </span>
-              </div>
-
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '0.775rem', fontWeight: 600, color: '#f1f5f9' }}>
-                  {item.desc}
-                </div>
-                <div
-                  style={{
-                    fontSize: '0.65rem',
-                    color: '#64748b',
-                    fontFamily: 'var(--font-mono)',
-                    marginTop: '2px',
-                    display: 'flex',
-                    gap: '1rem',
-                  }}
-                >
-                  <span>Event: <strong style={{ color: '#cbd5e1' }}>{item.event}</strong></span>
-                  <span>Actor: <strong style={{ color: '#cbd5e1' }}>{item.actor}</strong></span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+      </Panel>
+    </>
   );
 };

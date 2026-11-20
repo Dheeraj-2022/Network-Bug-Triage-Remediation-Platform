@@ -5,6 +5,7 @@
 
 import {
   AIIncident,
+  AIIncidentDetail,
   AIStatus,
   AuditEntry,
   Decision,
@@ -13,6 +14,7 @@ import {
 } from '../types';
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
+export const API_BASE_URL = BASE_URL;
 
 async function fetchJson<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
@@ -77,7 +79,7 @@ export const api = {
   // AI Multi-Agent
   getAiStatus: () => fetchJson<AIStatus>('/api/ai/status'),
   getAiIncidents: (limit: number = 50) => fetchJson<AIIncident[]>(`/api/ai/incidents?limit=${limit}`),
-  getAiIncident: (id: string) => fetchJson<any>(`/api/ai/incident/${id}`),
+  getAiIncident: (id: string) => fetchJson<AIIncidentDetail>(`/api/ai/incident/${encodeURIComponent(id)}`),
 
   approveAiIncident: (incident_id: string, approved: boolean) =>
     fetchJson<{ ok: boolean; status: string; incident_id: string; validation?: any }>('/api/ai/approve', {

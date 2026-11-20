@@ -1,6 +1,5 @@
 /**
- * Core type definitions for Network Triage NOC Frontend.
- * Aligns with FastAPI backend schemas and Stitch UI design specifications.
+ * Types mirroring the FastAPI contracts in schemas.py / api/service.py.
  */
 
 export interface ModelStatus {
@@ -46,12 +45,18 @@ export interface TelemetryEvent {
   rdma?: RdmaStats;
   dmesg_tail?: string;
   sample_packets?: PacketSample[];
-  // UI enrichment fields
-  severity?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFO';
-  protocol?: string;
-  source_ip?: string;
+}
+
+export interface DecisionAI {
+  incident_id?: string;
+  llm_backend?: string;
+  fault_domain?: string;
+  root_cause?: string;
+  confidence?: number;
+  ai_playbook?: string;
+  risk?: string;
   status?: string;
-  correlated_incident?: string;
+  context_sources?: any[];
 }
 
 export interface Decision {
@@ -65,17 +70,7 @@ export interface Decision {
   ml_localization?: string;
   remediate: boolean;
   playbook?: string | null;
-  ai?: {
-    incident_id?: string;
-    llm_backend?: string;
-    fault_domain?: string;
-    root_cause?: string;
-    confidence?: number;
-    ai_playbook?: string;
-    risk?: string;
-    status?: string;
-    context_sources?: any[];
-  };
+  ai?: DecisionAI | null;
 }
 
 export interface AuditEntry {
@@ -90,16 +85,18 @@ export interface AuditEntry {
 export interface AIStatus {
   enabled: boolean;
   llm_backend?: string;
+  llm_impl?: string | null;
+  executor?: string;
   uses_llm?: boolean;
-  vertex_model?: string;
-  retriever_backend?: string;
+  vertex_model?: string | null;
+  retriever_backend?: string | null;
   require_human_approval?: boolean;
   memory?: {
     conversations?: number;
     fault_domains?: number;
     hosts_tracked?: number;
     incidents?: number;
-  };
+  } | null;
   metrics?: {
     avg_latency_seconds?: Record<string, number>;
     counters?: Record<string, number>;
@@ -126,36 +123,55 @@ export interface AIIncident {
   context_sources?: any[];
 }
 
-export interface CorrelatedIncident {
-  id: string;
-  title: string;
-  severity: 'CRITICAL' | 'HIGH' | 'MED' | 'LOW';
-  status: 'Investigating' | 'RCA Ready' | 'Action Req.' | 'Monitoring' | 'Resolved';
-  source: string;
-  targetInterface: string;
-  mlConfidence: number;
-  timestamp: string;
-  lossMetric?: string;
-  queueMetric?: string;
-  detectedTime: string;
-  affectedHost: string;
-}
-
-export interface IncidentEvidenceSignal {
-  timestamp: string;
-  metric: string;
-  observed: string;
-  nominal: string;
-  origin: string;
-  state: 'CRIT' | 'WARN' | 'NORMAL';
-}
-
-export interface IncidentAgentTraceItem {
+export interface TraceStep {
+  ts: string;
   agent: string;
-  timestamp: string;
-  action: string;
-  detail: string;
-  status: 'completed' | 'active' | 'pending';
+  message: string;
+  data?: any;
+}
+
+/** Full orchestrator result returned by GET /api/ai/incident/{id}. */
+export interface AIIncidentDetail {
+  ts?: string;
+  incident_id: string;
+  event?: TelemetryEvent;
+  host?: string;
+  event_id?: string;
+  llm_backend?: string;
+  plan?: { escalate?: boolean; steps?: string[]; reason?: string };
+  signals?: Record<string, any>;
+  runbook?: string | null;
+  rca?: {
+    root_cause?: string;
+    fault_domain?: string;
+    confidence?: number;
+    evidence?: string[];
+    explanation?: string;
+    _backend?: string;
+    [k: string]: any;
+  };
+  remediation?: {
+    playbook?: string | null;
+    strategy?: string;
+    extra_vars?: Record<string, any>;
+    risk?: string;
+    risk_rationale?: string;
+    requires_human_approval?: boolean;
+    rollback?: string;
+    targets?: Record<string, any>[];
+    status?: string;
+    [k: string]: any;
+  };
+  validation?: {
+    resolved?: boolean | null;
+    confidence?: number;
+    residual_risk?: string;
+    recommendation?: string;
+    [k: string]: any;
+  };
+  context_sources?: string[];
+  trace?: TraceStep[];
+  errors?: string[];
 }
 
 export type PageId =

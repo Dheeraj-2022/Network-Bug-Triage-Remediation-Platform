@@ -1,837 +1,769 @@
-import React, { useState } from 'react';
-import {
-  Activity,
-  AlertOctagon,
-  AlertTriangle,
-  ArrowLeft,
-  Check,
-  CheckCircle2,
-  Clock,
-  Code,
-  Copy,
-  Cpu,
-  ExternalLink,
-  Layers,
-  Lock,
-  Play,
-  RotateCcw,
-  Server,
-  Shield,
-  ShieldAlert,
-  Terminal,
-  UserCheck,
-  X,
-  Zap,
-} from 'lucide-react';
-import { PageId } from '../types';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, Check, Minus, X } from 'lucide-react';
+import { IncidentTable } from '../components/IncidentTable';
+import { Badge, Banner, EmptyState, Meter, PageHeader, Panel, RiskBadge, SeverityTag, StateBadge, cx } from '../components/ui';
+import { eventErrorCount, eventSignal, Incident } from '../lib/incidents';
+import { domainLabel, formatBytes, formatDateTime, formatNumber, formatPct, formatTime, relativeTime } from '../lib/format';
+import { hrefFor } from '../lib/routes';
+import { api } from '../services/api';
+import { AIIncidentDetail, AIStatus, AuditEntry, TelemetryEvent } from '../types';
+import { CommonPageProps } from './common';
 
-interface IncidentDetailPageProps {
-  incidentId: string;
-  onBack: () => void;
-  onApprove: (incidentId: string, approved: boolean) => void;
-  isApproving: boolean;
+interface Props extends CommonPageProps {
+  incidentKey: string;
+  incidents: Incident[];
+  events: TelemetryEvent[];
+  auditLog: AuditEntry[];
+  aiStatus: AIStatus | null;
+  onRequestApproval: (i: Incident, approve: boolean) => void;
 }
 
-export const IncidentDetailPage: React.FC<IncidentDetailPageProps> = ({
-  incidentId,
-  onBack,
-  onApprove,
-  isApproving,
-}) => {
-  const [approvalStatus, setApprovalStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
-  const [copiedPayload, setCopiedPayload] = useState(false);
+type Tab = 'analysis' | 'plan' | 'evidence' | 'trace';
+type StepState = 'done' | 'current' | 'failed' | 'skipped' | 'pending';
 
-  const handleAction = (approved: boolean) => {
-    setApprovalStatus(approved ? 'approved' : 'rejected');
-    onApprove(incidentId, approved);
-  };
+interface Step {
+  name: string;
+  state: StepState;
+  meta?: React.ReactNode;
+}
 
-  const cliPayload = `router bgp 65001
- neighbor 62.115.148.1 route-map RM-DRAIN-OUT out
-interface GigabitEthernet0/24
- shutdown
-# Awaiting signature to dispatch SSH payload...`;
+const STEP_ICON: Record<StepState, React.ReactNode> = {
+  done: <Check size={11} strokeWidth={3} />,
+  current: null,
+  failed: <X size={11} strokeWidth={3} />,
+  skipped: <Minus size={11} strokeWidth={3} color="var(--text-4)" />,
+  pending: null,
+};
 
-  const copyCliPayload = () => {
-    navigator.clipboard.writeText(cliPayload);
-    setCopiedPayload(true);
-    setTimeout(() => setCopiedPayload(false), 2000);
-  };
+function buildSteps(i: Incident, detail: AIIncidentDetail | null, executions: AuditEntry[]): Step[] {
+  const hasAi = !!i.aiId;
+  const approval: Step = (() => {
+    switch (i.state) {
+      case 'awaiting_approval':
+        return { name: 'Approval', state: 'current', meta: 'Waiting for an engineer' };
+      case 'approved':
+        return { name: 'Approval', state: 'done', meta: 'Approved' };
+      case 'rejected':
+        return { name: 'Approval', state: 'failed', meta: 'Rejected' };
+      case 'auto':
+        return { name: 'Approval', state: 'skipped', meta: 'Not required (low risk)' };
+      case 'manual':
+        return { name: 'Approval', state: 'skipped', meta: 'No automated plan' };
+      default:
+        return { name: 'Approval', state: 'skipped', meta: 'No gate on rules path' };
+    }
+  })();
+
+  const execution: Step = (() => {
+    if (i.state === 'rejected' || i.state === 'manual') return { name: 'Execution', state: 'skipped', meta: 'Not executed' };
+    if (i.state === 'awaiting_approval') return { name: 'Execution', state: 'pending', meta: 'Blocked by approval gate' };
+    if (executions.length) return { name: 'Execution', state: 'done', meta: `${executions[0].status || 'recorded'} · ${formatTime(executions[0].ts)}` };
+    if (i.state === 'approved' || i.state === 'auto') return { name: 'Execution', state: 'done', meta: 'Dispatched by orchestrator' };
+    return { name: 'Execution', state: 'pending' };
+  })();
+
+  const resolved = detail?.validation?.resolved;
+  const validation: Step = !hasAi
+    ? { name: 'Validation', state: 'skipped', meta: 'Analysis engine not involved' }
+    : resolved === true
+      ? { name: 'Validation', state: 'done', meta: `Resolved · ${formatPct(detail?.validation?.confidence)}` }
+      : resolved === false
+        ? { name: 'Validation', state: 'failed', meta: detail?.validation?.residual_risk ? `Residual risk: ${detail.validation.residual_risk}` : 'Not resolved' }
+        : { name: 'Validation', state: 'pending', meta: execution.state === 'done' ? 'Awaiting validation' : undefined };
+
+  return [
+    { name: 'Detected', state: 'done', meta: formatTime(i.ts) + ' UTC' },
+    {
+      name: 'Triaged',
+      state: 'done',
+      meta: `${i.ruleAction === 'remediate' ? 'Rule breach' : 'Rule ok'} · ML ${i.mlPriority.toFixed(2)}`,
+    },
+    hasAi
+      ? { name: 'Root cause', state: 'done', meta: `${domainLabel(i.faultDomain)} · ${formatPct(i.confidence)}` }
+      : { name: 'Root cause', state: 'skipped', meta: 'Analysis engine disabled' },
+    i.playbook
+      ? { name: 'Plan', state: 'done', meta: i.playbook }
+      : { name: 'Plan', state: 'failed', meta: 'No playbook matched' },
+    approval,
+    execution,
+    validation,
+  ];
+}
+
+export const IncidentDetailPage: React.FC<Props> = ({ incidentKey, incidents, events, auditLog, aiStatus, loaded, navigate, onRequestApproval }) => {
+  const incident = incidents.find((i) => i.key === incidentKey);
+  const [tab, setTab] = useState<Tab>('analysis');
+  const [detail, setDetail] = useState<AIIncidentDetail | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  const aiId = incident?.aiId;
+  const aiStatusKey = incident?.state;
+
+  useEffect(() => {
+    if (!aiId) return;
+    let cancelled = false;
+    setDetailLoading(true);
+    api
+      .getAiIncident(aiId)
+      .then((d) => {
+        if (!cancelled) {
+          setDetail(d);
+          setDetailError(null);
+        }
+      })
+      .catch((e: Error) => !cancelled && setDetailError(e.message))
+      .finally(() => !cancelled && setDetailLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [aiId, aiStatusKey]);
+
+  const event = useMemo(
+    () => detail?.event ?? events.find((e) => e.event_id && e.event_id === incident?.eventId),
+    [detail, events, incident?.eventId],
+  );
+  const executions = useMemo(
+    () => (incident?.eventId ? auditLog.filter((a) => a.event_id === incident.eventId).reverse() : []),
+    [auditLog, incident?.eventId],
+  );
+  const related = useMemo(
+    () =>
+      incident
+        ? incidents.filter((o) => o.key !== incident.key && (o.host === incident.host || o.faultDomain === incident.faultDomain)).slice(0, 6)
+        : [],
+    [incidents, incident],
+  );
+
+  const breadcrumb = (
+    <>
+      <a href={hrefFor('incidents')}>Incidents</a>
+      <span aria-hidden>/</span>
+      <span className="mono">{incidentKey}</span>
+    </>
+  );
+
+  if (!incident) {
+    return (
+      <>
+        <PageHeader breadcrumb={breadcrumb} title={loaded ? 'Incident not found' : 'Loading incident…'} />
+        <Panel>
+          {loaded ? (
+            <EmptyState
+              title="This incident is not in the controller's current window"
+              description="The controller keeps recent state in memory. The incident may have been cleared by a reset or aged out of the last 200 decisions."
+              actions={
+                <button className="btn" onClick={() => navigate('incidents')}>
+                  <ArrowLeft size={14} /> Back to incidents
+                </button>
+              }
+            />
+          ) : (
+            <div className="stack">
+              <div className="skeleton" style={{ width: '40%' }} />
+              <div className="skeleton" style={{ width: '70%' }} />
+              <div className="skeleton" style={{ width: '55%' }} />
+            </div>
+          )}
+        </Panel>
+      </>
+    );
+  }
+
+  const steps = buildSteps(incident, detail, executions);
+  const awaiting = incident.state === 'awaiting_approval';
+  const trace = detail?.trace ?? [];
+  const sources = (detail?.context_sources ?? incident.contextSources ?? []).map((s) => (typeof s === 'string' ? s : JSON.stringify(s)));
+
+  const approvalActions = awaiting ? (
+    <>
+      <button className="btn btn-danger" onClick={() => onRequestApproval(incident, false)}>
+        Reject plan
+      </button>
+      <button className="btn btn-primary" onClick={() => onRequestApproval(incident, true)}>
+        Approve plan
+      </button>
+    </>
+  ) : null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-      {/* Top Breadcrumb & Utilities */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          <button
-            onClick={onBack}
-            className="noc-btn noc-btn-outline"
-            style={{ height: '28px', padding: '0 0.65rem' }}
-          >
-            <ArrowLeft size={13} />
-            Back to Active Incidents
-          </button>
-          <span style={{ color: '#475569', fontSize: '0.75rem' }}>/</span>
-          <span style={{ color: '#94a3b8', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
-            CORE ROUTING US-EAST
+    <>
+      <PageHeader
+        breadcrumb={breadcrumb}
+        title={incident.title}
+        description={
+          <span className="row wrap" style={{ gap: 'var(--sp-3)' }}>
+            <SeverityTag severity={incident.severity} />
+            <StateBadge state={incident.state} />
+            <span className="muted">
+              Detected {relativeTime(incident.ts)} · <span className="num">{formatDateTime(incident.ts)}</span>
+            </span>
           </span>
-          <span style={{ color: '#475569', fontSize: '0.75rem' }}>/</span>
-          <span style={{ color: '#38bdf8', fontSize: '0.75rem', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
-            {incidentId}
-          </span>
-        </div>
+        }
+        actions={approvalActions}
+      />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <button className="noc-btn noc-btn-outline" style={{ height: '28px', fontSize: '0.6875rem' }}>
-            <Terminal size={12} />
-            SSH Console R-204
-          </button>
-          <button className="noc-btn noc-btn-outline" style={{ height: '28px', fontSize: '0.6875rem' }}>
-            Export PCAP & Logs
-          </button>
-        </div>
-      </div>
+      {awaiting && (
+        <Banner tone="warn" title="Approval required before this plan can run">
+          The orchestrator proposed <span className="mono">{incident.playbook || 'a playbook'}</span> at{' '}
+          {incident.risk || 'unknown'} risk.{' '}
+          {aiStatus?.require_human_approval ? 'All plans require sign-off by policy.' : 'Medium and high-risk plans require sign-off.'}
+        </Banner>
+      )}
 
-      {/* Incident Header & Metadata Badges */}
-      <div className="noc-card" style={{ padding: '1.15rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.55rem' }}>
-          <span className="noc-badge noc-badge-crit">● CRITICAL</span>
-          <span
-            className="noc-badge"
-            style={{
-              backgroundColor:
-                approvalStatus === 'approved'
-                  ? 'rgba(16, 185, 129, 0.15)'
-                  : approvalStatus === 'rejected'
-                  ? 'rgba(244, 63, 94, 0.15)'
-                  : 'rgba(245, 158, 11, 0.15)',
-              color:
-                approvalStatus === 'approved' ? '#10b981' : approvalStatus === 'rejected' ? '#f43f5e' : '#f59e0b',
-              border: `1px solid ${
-                approvalStatus === 'approved' ? '#10b981' : approvalStatus === 'rejected' ? '#f43f5e' : '#f59e0b'
-              }`,
-            }}
-          >
-            ● {approvalStatus === 'approved' ? 'REMEDIATION APPROVED' : approvalStatus === 'rejected' ? 'REMEDIATION REJECTED' : 'AWAITING HUMAN APPROVAL'}
-          </span>
-          <span style={{ fontSize: '0.6875rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-            ID: <strong style={{ color: '#cbd5e1' }}>{incidentId}</strong>
-          </span>
-          <span style={{ fontSize: '0.6875rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>
-            Target: <strong style={{ color: '#cbd5e1' }}>Router R-204 (10.240.4.1)</strong>
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-          <div>
-            <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em' }}>
-              {incidentId} — Packet Loss Spike on Core Uplink (Router R-204)
-            </h1>
-          </div>
-
-          {/* KPI Strip */}
-          <div style={{ display: 'flex', gap: '0.85rem', flexShrink: 0 }}>
-            <div
-              style={{
-                padding: '0.35rem 0.65rem',
-                backgroundColor: '#0c1017',
-                border: '1px solid #1e2636',
-                borderRadius: '3px',
-                textAlign: 'right',
-              }}
-            >
-              <div style={{ fontSize: '0.5625rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>TRIAGE CONFIDENCE</div>
-              <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#10b981', fontFamily: 'var(--font-mono)' }}>
-                94.2%
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '0.35rem 0.65rem',
-                backgroundColor: '#0c1017',
-                border: '1px solid #1e2636',
-                borderRadius: '3px',
-                textAlign: 'right',
-              }}
-            >
-              <div style={{ fontSize: '0.5625rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>PACKET LOSS PEAK</div>
-              <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#f43f5e', fontFamily: 'var(--font-mono)' }}>
-                34.2%
-              </div>
-            </div>
-
-            <div
-              style={{
-                padding: '0.35rem 0.65rem',
-                backgroundColor: '#0c1017',
-                border: '1px solid #1e2636',
-                borderRadius: '3px',
-                textAlign: 'right',
-              }}
-            >
-              <div style={{ fontSize: '0.5625rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>DETECTED</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#cbd5e1', fontFamily: 'var(--font-mono)', marginTop: '2px' }}>
-                14:32:08 UTC
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Metadata pills */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '1.25rem',
-            paddingTop: '0.85rem',
-            marginTop: '0.85rem',
-            borderTop: '1px solid #1a2230',
-            fontSize: '0.6875rem',
-            color: '#94a3b8',
-            fontFamily: 'var(--font-mono)',
-          }}
-        >
-          <div>Service Route: <strong style={{ color: '#e2e8f0' }}>Core Backbone Transit</strong></div>
-          <div>ASN / Location: <strong style={{ color: '#e2e8f0' }}>ASN 16185 • US-EAST PoP</strong></div>
-          <div>Affected Interface: <strong style={{ color: '#38bdf8' }}>Gi0/24 (Tier-1 Telia)</strong></div>
-          <div>Host OS / Platform: <strong style={{ color: '#e2e8f0' }}>Arista EOS - 4.28.5M</strong></div>
-          <div>Egress Blast Radius: <strong style={{ color: '#f59e0b' }}>1.4 Tbps Transit</strong></div>
-          <div>Assigned Responder: <strong style={{ color: '#10b981' }}>s.vance (Tier-3 On-Call)</strong></div>
-        </div>
-      </div>
-
-      {/* INCIDENT TIMELINE STAGES */}
-      <div className="noc-card" style={{ padding: '0.85rem 1rem' }}>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)',
-            gap: '0.5rem',
-            position: 'relative',
-          }}
-        >
-          {[
-            { step: '1. Detected', time: '14:32:08 UTC', done: true },
-            { step: '2. Triaged', time: '14:32:09 UTC', done: true },
-            { step: '3. Root Cause ID', time: '14:32:10 UTC', done: true },
-            { step: '4. Plan Proposed', time: '14:32:11 UTC', done: true },
-            {
-              step: '5. Awaiting Approval',
-              time: approvalStatus === 'approved' ? 'APPROVED' : 'ACTION REQUIRED',
-              active: approvalStatus === 'pending',
-              done: approvalStatus === 'approved',
-            },
-            {
-              step: '6. Execution / Resolved',
-              time: approvalStatus === 'approved' ? 'Dispatched' : 'Staged',
-              done: approvalStatus === 'approved',
-            },
-          ].map((s, idx) => (
-            <div
-              key={s.step}
-              style={{
-                padding: '0.45rem 0.65rem',
-                backgroundColor: s.active ? '#1c1815' : s.done ? '#0f1718' : '#0c0f15',
-                border: `1px solid ${
-                  s.active ? '#f59e0b' : s.done ? '#10b981' : '#1e2430'
-                }`,
-                borderRadius: '3px',
-              }}
-            >
-              <div
-                style={{
-                  fontSize: '0.625rem',
-                  fontFamily: 'var(--font-mono)',
-                  color: s.active ? '#f59e0b' : s.done ? '#10b981' : '#64748b',
-                  fontWeight: 700,
-                }}
-              >
-                {s.done ? '✓ ' : s.active ? '● ' : ''}
-                {s.step}
-              </div>
-              <div
-                style={{
-                  fontSize: '0.625rem',
-                  color: s.active ? '#f59e0b' : '#94a3b8',
-                  marginTop: '2px',
-                  fontFamily: 'var(--font-mono)',
-                }}
-              >
-                {s.time}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* HUMAN APPROVAL GATE - Prominent Alert Box */}
-      <div
-        className="noc-card"
-        style={{
-          border: '1px solid #f59e0b',
-          backgroundColor: '#12100d',
-          padding: '1.15rem 1.25rem',
-          boxShadow: '0 4px 20px rgba(245, 158, 11, 0.08)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1.5rem' }}>
-          <div style={{ display: 'flex', gap: '0.85rem' }}>
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '4px',
-                backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                border: '1px solid #f59e0b',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#f59e0b',
-                flexShrink: 0,
-              }}
-            >
-              <ShieldAlert size={20} />
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                <span style={{ fontSize: '0.875rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.01em' }}>
-                  Human Approval Gate Required
+      <ol className="steps" aria-label="Incident lifecycle">
+        {steps.map((s) => (
+          <li key={s.name} className={cx('step', s.state)} aria-current={s.state === 'current' ? 'step' : undefined}>
+            <span className="step-icon" aria-hidden>
+              {STEP_ICON[s.state]}
+            </span>
+            <span style={{ minWidth: 0 }}>
+              <span className="step-name" style={{ display: 'block' }}>
+                {s.name}
+              </span>
+              {s.meta && (
+                <span className="step-meta truncate" style={{ display: 'block' }} title={typeof s.meta === 'string' ? s.meta : undefined}>
+                  {s.meta}
                 </span>
-                <span
-                  style={{
-                    padding: '0.1rem 0.4rem',
-                    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                    color: '#f59e0b',
-                    fontSize: '0.625rem',
-                    fontFamily: 'var(--font-mono)',
-                    fontWeight: 700,
-                    borderRadius: '2px',
-                  }}
-                >
-                  LOCK: POLICY #POL-OPC-9
-                </span>
-              </div>
+              )}
+            </span>
+          </li>
+        ))}
+      </ol>
 
-              <p style={{ fontSize: '0.775rem', color: '#cbd5e1', lineHeight: 1.5, maxWidth: '850px' }}>
-                Autonomous execution is blocked for Tier-1 core uplinks. You are signing off on an automated graceful BGP drain (<strong style={{ color: '#f59e0b' }}>AS65001-B: graceful-shutdown</strong>) to peer 62.115.148.1, live route shift to backup <strong style={{ color: '#38bdf8' }}>Gi0/25</strong>, and optical transceiver reset on <strong style={{ color: '#f43f5e' }}>Gi0/24</strong>.
-              </p>
-
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '1.25rem',
-                  marginTop: '0.65rem',
-                  fontSize: '0.6875rem',
-                  color: '#94a3b8',
-                  fontFamily: 'var(--font-mono)',
-                }}
-              >
-                <span>Pre-check: <strong style={{ color: '#10b981' }}>PASS</strong></span>
-                <span>Capacity Headroom: <strong style={{ color: '#10b981' }}>52% (41% used)</strong></span>
-                <span>Estimated Outage Loss: <strong style={{ color: '#10b981' }}>0 pkts</strong></span>
-              </div>
-            </div>
+      <div className="layout-aside">
+        <Panel flush>
+          <div className="tabs" role="tablist" aria-label="Incident details">
+            {(
+              [
+                ['analysis', 'Root cause'],
+                ['plan', 'Remediation plan'],
+                ['evidence', 'Diagnostic evidence'],
+                ['trace', `Agent trace${trace.length ? ` (${trace.length})` : ''}`],
+              ] as [Tab, string][]
+            ).map(([id, label]) => (
+              <button key={id} role="tab" className="tab" aria-selected={tab === id} onClick={() => setTab(id)}>
+                {label}
+              </button>
+            ))}
           </div>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flexShrink: 0 }}>
-            {approvalStatus === 'pending' ? (
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  onClick={() => handleAction(true)}
-                  disabled={isApproving}
-                  className="noc-btn noc-btn-primary"
-                  style={{ height: '34px', padding: '0 1rem' }}
-                >
-                  <Check size={14} />
-                  {isApproving ? 'Submitting...' : 'Approve Remediation (Drain & Recalibrate)'}
-                </button>
-                <button
-                  onClick={() => handleAction(false)}
-                  disabled={isApproving}
-                  className="noc-btn noc-btn-danger"
-                  style={{ height: '34px', padding: '0 0.85rem' }}
-                >
-                  <X size={14} />
-                  Reject
-                </button>
-                <button className="noc-btn noc-btn-outline" style={{ height: '34px' }}>
-                  Request Peer Review
-                </button>
-              </div>
-            ) : (
-              <div
-                style={{
-                  padding: '0.45rem 0.85rem',
-                  borderRadius: '3px',
-                  backgroundColor: approvalStatus === 'approved' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
-                  border: `1px solid ${approvalStatus === 'approved' ? '#10b981' : '#f43f5e'}`,
-                  color: approvalStatus === 'approved' ? '#10b981' : '#f43f5e',
-                  fontWeight: 700,
-                  fontSize: '0.75rem',
-                  fontFamily: 'var(--font-mono)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                }}
-              >
-                {approvalStatus === 'approved' ? <CheckCircle2 size={16} /> : <AlertOctagon size={16} />}
-                Remediation plan {approvalStatus} by engineer
+          <div className="panel-body" role="tabpanel">
+            {incident.aiId && detailError && (
+              <div style={{ marginBottom: 'var(--sp-4)' }}>
+                <Banner tone="crit" title="Could not load the analysis record">
+                  {detailError}
+                </Banner>
               </div>
             )}
+            {incident.aiId && detailLoading && !detail ? (
+              <div className="stack">
+                <div className="skeleton" style={{ width: '50%' }} />
+                <div className="skeleton" style={{ width: '80%' }} />
+                <div className="skeleton" style={{ width: '65%' }} />
+              </div>
+            ) : (
+              <>
+                {tab === 'analysis' && <AnalysisTab incident={incident} detail={detail} sources={sources} />}
+                {tab === 'plan' && <PlanTab incident={incident} detail={detail} actions={approvalActions} />}
+                {tab === 'evidence' && <EvidenceTab event={event} detail={detail} />}
+                {tab === 'trace' &&
+                  (trace.length === 0 ? (
+                    <EmptyState
+                      compact
+                      title="No agent trace"
+                      description={
+                        incident.aiId
+                          ? 'The orchestrator did not record any steps for this incident.'
+                          : 'This incident was raised by the rules engine / ML triage path; the multi-agent workflow did not run.'
+                      }
+                    />
+                  ) : (
+                    <ol className="timeline">
+                      {trace.map((t, idx) => {
+                        const bad = /error|fail|exception/i.test(t.message);
+                        return (
+                          <li key={idx} className={cx('timeline-item', bad ? 'crit' : 'ok')}>
+                            <span className="timeline-marker" aria-hidden />
+                            <div style={{ minWidth: 0 }}>
+                              <div className="timeline-head">
+                                <span className="timeline-agent">{t.agent}</span>
+                                <span className="timeline-time">{formatTime(t.ts)}</span>
+                              </div>
+                              <div className="timeline-msg">{t.message}</div>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  ))}
+                {detail?.errors && detail.errors.length > 0 && (
+                  <div style={{ marginTop: 'var(--sp-4)' }}>
+                    <Banner tone="crit" title={`${detail.errors.length} orchestrator error${detail.errors.length === 1 ? '' : 's'}`}>
+                      <ul style={{ paddingLeft: 16 }}>
+                        {detail.errors.map((e, i) => (
+                          <li key={i} className="mono" style={{ fontSize: 'var(--fs-sm)' }}>
+                            {e}
+                          </li>
+                        ))}
+                      </ul>
+                    </Banner>
+                  </div>
+                )}
+              </>
+            )}
           </div>
+        </Panel>
+
+        <div className="stack">
+          <Panel title="Triage decision">
+            <dl className="kv">
+              <dt>Host</dt>
+              <dd>
+                <a className="mono" href={hrefFor('events', undefined, { host: incident.host })}>
+                  {incident.host}
+                </a>
+              </dd>
+              <dt>Event</dt>
+              <dd>
+                {incident.eventId ? (
+                  <a className="mono" href={hrefFor('events', undefined, { event: incident.eventId })}>
+                    {incident.eventId}
+                  </a>
+                ) : (
+                  '—'
+                )}
+              </dd>
+              <dt>Rule outcome</dt>
+              <dd>
+                {incident.ruleAction === 'remediate' ? <Badge tone="crit">Threshold breached</Badge> : <Badge>No breach</Badge>}
+              </dd>
+              <dt>Rule reason</dt>
+              <dd className="mono">{incident.ruleReason || '—'}</dd>
+              <dt>Log class</dt>
+              <dd className="mono">{incident.logClass || '—'}</dd>
+              <dt>ML priority</dt>
+              <dd>
+                <Meter value={incident.mlPriority} title="XGBoost priority score" />
+              </dd>
+              <dt>Localization</dt>
+              <dd className="mono">{incident.decision.ml_localization || '—'}</dd>
+              <dt>Fault domain</dt>
+              <dd>{domainLabel(incident.faultDomain)}</dd>
+              {incident.aiId && (
+                <>
+                  <dt>Analysis ID</dt>
+                  <dd className="mono" style={{ fontSize: 'var(--fs-sm)' }}>
+                    {incident.aiId}
+                  </dd>
+                  <dt>LLM backend</dt>
+                  <dd className="mono">{incident.llmBackend || '—'}</dd>
+                </>
+              )}
+            </dl>
+          </Panel>
+
+          <Panel title="Execution history" count={executions.length} flush>
+            {executions.length === 0 ? (
+              <EmptyState compact title="No playbook runs recorded" description="Runs appear here when the controller triggers a playbook for this event." />
+            ) : (
+              <div className="component-list">
+                {executions.map((a, idx) => (
+                  <div className="component-row" key={`${a.ts}-${idx}`}>
+                    <div style={{ minWidth: 0 }}>
+                      <div className="mono truncate">{a.playbook || '—'}</div>
+                      <div className="component-detail truncate">{a.reason}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <Badge tone="info">{a.status || 'recorded'}</Badge>
+                      <div className="component-detail num">{formatTime(a.ts)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Panel>
+
+          <Panel title="Related incidents" count={related.length} sub="Same host or fault domain" flush>
+            <IncidentTable
+              incidents={related}
+              navigate={navigate}
+              columns={['severity', 'incident', 'detected']}
+              empty={<EmptyState compact title="No related incidents" />}
+            />
+          </Panel>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Tabs
+// ---------------------------------------------------------------------------
+const AnalysisTab: React.FC<{ incident: Incident; detail: AIIncidentDetail | null; sources: string[] }> = ({ incident, detail, sources }) => {
+  const rca = detail?.rca;
+  const plan = detail?.plan;
+
+  if (!incident.aiId) {
+    return (
+      <div className="stack">
+        <Banner title="Raised by the rules engine and ML triage">
+          The multi-agent analysis engine was not available when this event was processed, so no root-cause analysis was
+          produced. The decision below is based on threshold rules and the triage model.
+        </Banner>
+        <dl className="kv">
+          <dt>Rule reason</dt>
+          <dd className="mono">{incident.ruleReason || '—'}</dd>
+          <dt>Log classifier</dt>
+          <dd className="mono">{incident.logClass || '—'}</dd>
+          <dt>ML localization</dt>
+          <dd className="mono">{incident.decision.ml_localization || '—'}</dd>
+          <dt>Selected playbook</dt>
+          <dd className="mono">{incident.playbook || '—'}</dd>
+        </dl>
+      </div>
+    );
+  }
+
+  const rootCause = rca?.root_cause ?? incident.rootCause;
+  const explanation = rca?.explanation ?? incident.explanation;
+  const evidence = rca?.evidence ?? [];
+
+  return (
+    <div className="stack">
+      <div className="kv-inline">
+        <div>
+          <span className="k">Fault domain</span>
+          <span className="strong">{domainLabel(rca?.fault_domain ?? incident.faultDomain)}</span>
+        </div>
+        <div>
+          <span className="k">Confidence</span>
+          <Meter value={rca?.confidence ?? incident.confidence} />
+        </div>
+        <div>
+          <span className="k">Reasoning backend</span>
+          <span className="mono">{rca?._backend || incident.llmBackend || '—'}</span>
         </div>
       </div>
 
-      {/* TWO COLUMN INVESTIGATION LAYOUT */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.25rem' }}>
-        {/* LEFT COLUMN: Telemetry, Triage Breakdown, RCA, Correlated Signals */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* 1. Incident Telemetry & Detection Vector */}
-          <div className="noc-card">
-            <div className="noc-card-header">
-              <div className="noc-card-title">
-                <Activity size={13} style={{ color: '#38bdf8' }} />
-                Incident Telemetry & Detection Vector
-              </div>
-              <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: '#64748b' }}>
-                SAMPLING RATE: 100ms
-              </span>
+      <div>
+        <div className="section-label">Root cause</div>
+        <p style={{ fontSize: 'var(--fs-lg)' }}>{rootCause || <span className="muted">Not determined</span>}</p>
+      </div>
+
+      {explanation && (
+        <div>
+          <div className="section-label">Explanation</div>
+          <p style={{ whiteSpace: 'pre-wrap', color: 'var(--text-2)' }}>{explanation}</p>
+        </div>
+      )}
+
+      {evidence.length > 0 && (
+        <div>
+          <div className="section-label">Supporting evidence</div>
+          <ul style={{ paddingLeft: 18, display: 'grid', gap: 4 }}>
+            {evidence.map((e, i) => (
+              <li key={i} className="log-line">
+                {e}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {plan && (plan.steps?.length || plan.reason) && (
+        <div>
+          <div className="section-label">Investigation plan</div>
+          {plan.reason && <p className="muted" style={{ marginBottom: 'var(--sp-2)' }}>{plan.reason}</p>}
+          {plan.steps && (
+            <div className="row wrap">
+              {plan.steps.map((s, i) => (
+                <Badge key={i} mono>
+                  {i + 1}. {s}
+                </Badge>
+              ))}
             </div>
+          )}
+        </div>
+      )}
 
-            <div style={{ padding: '0.9rem' }}>
-              <p style={{ fontSize: '0.775rem', color: '#cbd5e1', lineHeight: 1.5, marginBottom: '0.75rem' }}>
-                At 14:32:08 UTC, <strong style={{ color: '#38bdf8' }}>Router R-204</strong> reported a sudden, severe burst of packet loss peaking at <strong style={{ color: '#f43f5e' }}>34.2%</strong> across interface <strong style={{ color: '#f1f5f9' }}>GigabitEthernet0/24</strong> connecting to transit provider Tier-1 Telia. Concurrently, queue buffer discards rose by 820% with back-to-back CRC frame check errors. The anomaly was correlated across 14 syslog triggers and SNMP traps within 800ms of inception.
-              </p>
+      <div>
+        <div className="section-label">Knowledge sources retrieved</div>
+        {sources.length === 0 ? (
+          <span className="muted">None</span>
+        ) : (
+          <ul style={{ listStyle: 'none', display: 'grid', gap: 2 }}>
+            {sources.map((s, i) => (
+              <li key={i} className="mono" style={{ fontSize: 'var(--fs-sm)' }}>
+                {s}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};
 
-              {/* Loss % vs Optical Rx dBm SVG graph */}
-              <div style={{ backgroundColor: '#090c10', border: '1px solid #1c222e', borderRadius: '3px', padding: '0.75rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: '#64748b', marginBottom: '0.4rem' }}>
-                  <span>TELEMETRY: Gi0/24 PACKET LOSS RATE (%) & OPTICAL RX LEVEL (dBm)</span>
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <span style={{ color: '#f43f5e' }}>● Loss %</span>
-                    <span style={{ color: '#38bdf8' }}>● Optical Rx (dBm)</span>
-                  </div>
-                </div>
+const PlanTab: React.FC<{ incident: Incident; detail: AIIncidentDetail | null; actions: React.ReactNode }> = ({ incident, detail, actions }) => {
+  const rem = detail?.remediation;
+  const val = detail?.validation;
+  const extraVars = rem?.extra_vars && Object.keys(rem.extra_vars).length ? rem.extra_vars : null;
+  const targets = rem?.targets && rem.targets.length ? rem.targets : null;
 
-                <div style={{ position: 'relative', height: '110px', width: '100%' }}>
-                  <svg viewBox="0 0 500 110" preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
-                    {/* Grid lines */}
-                    <line x1="0" y1="20" x2="500" y2="20" stroke="#1c2432" strokeWidth="1" strokeDasharray="2 2" />
-                    <line x1="0" y1="55" x2="500" y2="55" stroke="#1c2432" strokeWidth="1" strokeDasharray="2 2" />
-                    <line x1="0" y1="90" x2="500" y2="90" stroke="#1c2432" strokeWidth="1" strokeDasharray="2 2" />
+  if (!incident.playbook && !rem) {
+    return (
+      <EmptyState
+        compact
+        title="No remediation plan"
+        description="No playbook matched this fault. It needs manual triage by an engineer."
+      />
+    );
+  }
 
-                    {/* Critical threshold text */}
-                    <text x="5" y="16" fill="#f43f5e" fontSize="9" fontFamily="var(--font-mono)">SLA Breach Threshold [15%]</text>
+  return (
+    <div className="stack">
+      <dl className="kv">
+        <dt>Playbook</dt>
+        <dd className="mono strong">{rem?.playbook ?? incident.playbook ?? '—'}</dd>
+        {rem?.strategy && (
+          <>
+            <dt>Strategy</dt>
+            <dd>{rem.strategy}</dd>
+          </>
+        )}
+        <dt>Risk</dt>
+        <dd>
+          <RiskBadge risk={rem?.risk ?? incident.risk} />
+          {rem?.risk_rationale && <div className="muted" style={{ marginTop: 4 }}>{rem.risk_rationale}</div>}
+        </dd>
+        <dt>Approval</dt>
+        <dd>
+          {rem?.requires_human_approval === undefined
+            ? incident.aiId
+              ? '—'
+              : 'Not gated (rules path)'
+            : rem.requires_human_approval
+              ? 'Required'
+              : 'Not required'}
+        </dd>
+        <dt>Plan status</dt>
+        <dd>
+          <StateBadge state={incident.state} />
+        </dd>
+        {rem?.rollback && (
+          <>
+            <dt>Rollback</dt>
+            <dd className="mono">{rem.rollback}</dd>
+          </>
+        )}
+      </dl>
 
-                    {/* Optical Rx level (dropping down) */}
-                    <path
-                      d="M 0,30 L 150,32 L 250,35 L 290,92 L 340,95 L 420,96 L 500,94"
-                      fill="none"
-                      stroke="#38bdf8"
-                      strokeWidth="2"
-                    />
+      {targets && (
+        <div>
+          <div className="section-label">Targets</div>
+          <pre className="code code-light">{JSON.stringify(targets, null, 2)}</pre>
+        </div>
+      )}
 
-                    {/* Loss rate curve (spiking up) */}
-                    <path
-                      d="M 0,102 L 150,100 L 250,98 L 290,18 L 330,12 L 420,15 L 500,20"
-                      fill="none"
-                      stroke="#f43f5e"
-                      strokeWidth="2.5"
-                    />
+      {extraVars && (
+        <div>
+          <div className="section-label">Extra vars</div>
+          <pre className="code code-light">{JSON.stringify(extraVars, null, 2)}</pre>
+        </div>
+      )}
 
-                    {/* Anomaly trigger marker */}
-                    <circle cx="290" cy="18" r="4" fill="#f43f5e" stroke="#000" strokeWidth="2" />
-                    <text x="300" y="22" fill="#f43f5e" fontSize="9" fontFamily="var(--font-mono)" fontWeight="bold">34.2% PKT LOSS PEAK</text>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
+      {detail?.runbook && (
+        <div>
+          <div className="section-label">Runbook</div>
+          <pre className="code code-light">{detail.runbook}</pre>
+        </div>
+      )}
 
-          {/* 2. Triage Engine Breakdown */}
-          <div className="noc-card">
-            <div className="noc-card-header">
-              <div className="noc-card-title">
-                <Cpu size={13} style={{ color: '#38bdf8' }} />
-                Triage Engine Breakdown
-              </div>
-              <span className="noc-badge noc-badge-crit">DECISION: LINK PHYSICAL FAILURE</span>
-            </div>
+      {val && Object.keys(val).length > 0 && (
+        <div>
+          <div className="section-label">Post-remediation validation</div>
+          <dl className="kv">
+            <dt>Resolved</dt>
+            <dd>
+              {val.resolved === true ? <Badge tone="ok">Yes</Badge> : val.resolved === false ? <Badge tone="crit">No</Badge> : <span className="muted">Pending</span>}
+            </dd>
+            <dt>Confidence</dt>
+            <dd>{formatPct(val.confidence)}</dd>
+            {val.residual_risk && (
+              <>
+                <dt>Residual risk</dt>
+                <dd>{val.residual_risk}</dd>
+              </>
+            )}
+            {val.recommendation && (
+              <>
+                <dt>Recommendation</dt>
+                <dd>{val.recommendation}</dd>
+              </>
+            )}
+          </dl>
+        </div>
+      )}
 
-            <div style={{ padding: '0.85rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              <div style={{ padding: '0.65rem', backgroundColor: '#0c0f15', border: '1px solid #1a2230', borderRadius: '3px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                  <span style={{ fontSize: '0.625rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>Deterministic Engine</span>
-                  <span className="noc-badge noc-badge-crit">TRIGGERED</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f1f5f9' }}>Rule #NET-402</div>
-                <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-                  Packet loss &gt; 15% on designated transit uplink within a sliding 30-second window.
-                </div>
-                <div style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: '#f43f5e', marginTop: '0.35rem' }}>
-                  Observed: 34.2% | Delta: +33.7%
-                </div>
-              </div>
+      {actions && (
+        <div className="row" style={{ justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: 'var(--sp-3)' }}>
+          {actions}
+        </div>
+      )}
+    </div>
+  );
+};
 
-              <div style={{ padding: '0.65rem', backgroundColor: '#0c0f15', border: '1px solid #1a2230', borderRadius: '3px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                  <span style={{ fontSize: '0.625rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>Telemetry ML Model (v3.2)</span>
-                  <span className="noc-badge noc-badge-ok">94.2% CONFIDENCE</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f1f5f9' }}>Transceiver Degradation</div>
-                <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-                  Cluster pattern matches optical attenuator drift / transceiver diode burnout profile.
-                </div>
-                <div style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: '#10b981', marginTop: '0.35rem' }}>
-                  Class: HARDWARE_PHYSICAL | P(True) = 0.942
-                </div>
-              </div>
+export const EventEvidence: React.FC<{ event: TelemetryEvent }> = ({ event }) => {
+  const ifaces = Object.entries(event.ifaces || {});
+  const packets = event.sample_packets || [];
+  return (
+    <div className="stack">
+      <div className="kv-inline">
+        <div>
+          <span className="k">Host</span>
+          <span className="mono">{event.host}</span>
+        </div>
+        <div>
+          <span className="k">Event</span>
+          <span className="mono">{event.event_id}</span>
+        </div>
+        <div>
+          <span className="k">Collected</span>
+          <span className="num">{formatDateTime(event.ts)}</span>
+        </div>
+        <div>
+          <span className="k">Iface errors</span>
+          <span className="num">{formatNumber(eventErrorCount(event))}</span>
+        </div>
+      </div>
 
-              <div style={{ padding: '0.65rem', backgroundColor: '#0c0f15', border: '1px solid #1a2230', borderRadius: '3px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                  <span style={{ fontSize: '0.625rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>Syslog NLP Parser</span>
-                  <span className="noc-badge noc-badge-med">PARSED 14 LOGS</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f1f5f9' }}>PHY_ERR: Transceiver Optical Rx</div>
-                <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-                  "Transceiver optical Rx power degraded below -18.4 dBm safety baseline."
-                </div>
-                <div style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: '#38bdf8', marginTop: '0.35rem' }}>
-                  Severity: ALERT | Source: R-204:Gi0/24
-                </div>
-              </div>
-
-              <div style={{ padding: '0.65rem', backgroundColor: '#0c0f15', border: '1px solid #1a2230', borderRadius: '3px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                  <span style={{ fontSize: '0.625rem', color: '#64748b', fontFamily: 'var(--font-mono)' }}>Orchestrator Synthesis</span>
-                  <span className="noc-badge noc-badge-high">SYNTHESIZED</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f1f5f9' }}>Urgent Core Physical Link Failure</div>
-                <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '0.2rem' }}>
-                  Remediation playbook identified: PR-NET-BGP-DRAIN-AND-CYCLE.
-                </div>
-                <div style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: '#f59e0b', marginTop: '0.35rem' }}>
-                  Escalation: TIER 3 | Auto-Action: Gated
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 3. Root Cause Analysis (RCA Engine) */}
-          <div className="noc-card">
-            <div className="noc-card-header">
-              <div className="noc-card-title">
-                <ShieldAlert size={13} style={{ color: '#f43f5e' }} />
-                Root Cause Analysis (RCA Engine)
-              </div>
-            </div>
-
-            <div style={{ padding: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ padding: '0.75rem', backgroundColor: '#131015', border: '1px solid #2e1d25', borderRadius: '3px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.3rem' }}>
-                  <span style={{ padding: '0.1rem 0.35rem', backgroundColor: '#f43f5e', color: '#fff', fontSize: '0.625rem', fontFamily: 'var(--font-mono)', fontWeight: 700, borderRadius: '2px' }}>
-                    1
-                  </span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f8fafc' }}>PRIMARY SUSPECT</span>
-                </div>
-                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#f43f5e', marginBottom: '0.25rem' }}>
-                  Optical SFP+ Transceiver (Tx/Rx Optical Budget Loss)
-                </div>
-                <p style={{ fontSize: '0.725rem', color: '#cbd5e1', lineHeight: 1.45 }}>
-                  Continuous Digital Optical Monitoring (DOM) indicates Rx optical power on GigabitEthernet0/24 plunged to <strong style={{ color: '#f43f5e' }}>-19.2 dBm</strong> (standard operational window is -6.0 to -11.0 dBm). The link layer is experiencing physical photodiode saturation failures causing bit transposition and continuous Frame Check Sequence (FCS) drop.
-                </p>
-              </div>
-
-              <div style={{ padding: '0.75rem', backgroundColor: '#12151d', border: '1px solid #1e2638', borderRadius: '3px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.3rem' }}>
-                  <span style={{ padding: '0.1rem 0.35rem', backgroundColor: '#38bdf8', color: '#000', fontSize: '0.625rem', fontFamily: 'var(--font-mono)', fontWeight: 700, borderRadius: '2px' }}>
-                    2
-                  </span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f8fafc' }}>SECONDARY CASCADING IMPACT</span>
-                </div>
-                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#38bdf8', marginBottom: '0.25rem' }}>
-                  Downstream BGP Keepalive Jitter & Imminent Session Flap
-                </div>
-                <p style={{ fontSize: '0.725rem', color: '#cbd5e1', lineHeight: 1.45 }}>
-                  Due to the 34.2% drop rate, BGP keepalive packets between Router R-204 and Telia upstream peer (62.115.148.1) were dropped 2 consecutive cycles. If the hold timer (15s remaining) expires before graceful drain, routes will withdraw abruptly, generating global BGP route recalculation churn across 4 upstream routers.
-                </p>
-              </div>
-
-              <div style={{ padding: '0.75rem', backgroundColor: '#11151c', border: '1px solid #1b2332', borderRadius: '3px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.3rem' }}>
-                  <span style={{ padding: '0.1rem 0.35rem', backgroundColor: '#f59e0b', color: '#000', fontSize: '0.625rem', fontFamily: 'var(--font-mono)', fontWeight: 700, borderRadius: '2px' }}>
-                    3
-                  </span>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f8fafc' }}>BLAST RADIUS CALCULATION</span>
-                </div>
-                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#f59e0b', marginBottom: '0.25rem' }}>
-                  1.4 Tbps Egress Traffic at Immediate Blackhole Risk
-                </div>
-                <p style={{ fontSize: '0.725rem', color: '#cbd5e1', lineHeight: 1.45 }}>
-                  Transit route paths currently egressing through Gi0/24 encompass key European destination prefixes (AS1299, AS2350). Active traffic shifting to redundant physical member <strong style={{ color: '#38bdf8' }}>GigabitEthernet0/25</strong> preserves 100% of egress paths with 0 packet drops if drained gracefully.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 4. Correlated Evidence Signals */}
-          <div className="noc-card">
-            <div className="noc-card-header">
-              <div className="noc-card-title">
-                <Terminal size={13} style={{ color: '#38bdf8' }} />
-                Correlated Evidence Signals
-              </div>
-              <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: '#64748b' }}>
-                4 HIGH-PRIORITY ARTIFACTS
-              </span>
-            </div>
-
-            <div className="noc-table-wrapper">
-              <table className="noc-table">
-                <thead>
-                  <tr>
-                    <th>TIMESTAMP (UTC)</th>
-                    <th>METRIC / TELEMETRY KEY</th>
-                    <th>OBSERVED VALUE</th>
-                    <th>NOMINAL THRESHOLD</th>
-                    <th>SIGNAL ORIGIN</th>
-                    <th>STATE</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { time: '14:32:08.112', key: 'ifOutDiscards', val: '18,420 pkts/s', nom: '< 50 pkts/s', origin: 'SNMP Trap', state: 'CRIT' },
-                    { time: '14:32:08.150', key: 'optRxPower', val: '-19.2 dBm', nom: '> -11.0 dBm', origin: 'DOM Telemetry', state: 'CRIT' },
-                    { time: '14:32:08.340', key: 'BGP_NBR_HOLDTIME', val: '400ms (Timer: 6s)', nom: 'Keepalive drop', origin: 'Syslog Event', state: 'WARN' },
-                    { time: '14:32:08.922', key: 'PING_PROBE_RTT', val: '412ms (34% loss)', nom: '< 9% loss', origin: 'Active Probe', state: 'CRIT' },
-                  ].map((row, idx) => (
-                    <tr key={idx}>
-                      <td style={{ fontFamily: 'var(--font-mono)', color: '#94a3b8' }}>{row.time}</td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#38bdf8' }}>{row.key}</td>
-                      <td style={{ fontFamily: 'var(--font-mono)', color: '#f43f5e', fontWeight: 700 }}>{row.val}</td>
-                      <td style={{ fontFamily: 'var(--font-mono)', color: '#64748b' }}>{row.nom}</td>
-                      <td>{row.origin}</td>
-                      <td>
-                        <span className={`noc-badge ${row.state === 'CRIT' ? 'noc-badge-crit' : 'noc-badge-high'}`}>
-                          ● {row.state}
-                        </span>
+      <div>
+        <div className="section-label">Interfaces</div>
+        {ifaces.length === 0 ? (
+          <span className="muted">No interface counters in this event</span>
+        ) : (
+          <div className="table-wrap" style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Interface</th>
+                  <th className="right">RX</th>
+                  <th className="right">TX</th>
+                  <th className="right">Err in</th>
+                  <th className="right">Err out</th>
+                  <th className="right">MTU</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ifaces.map(([name, s]) => {
+                  const mtuOdd = s.mtu !== undefined && s.mtu !== 1500 && s.mtu !== 9000;
+                  return (
+                    <tr key={name}>
+                      <td className="mono">{name}</td>
+                      <td className="right num">{formatBytes(s.rx_bytes)}</td>
+                      <td className="right num">{formatBytes(s.tx_bytes)}</td>
+                      <td className="right num" style={{ color: s.errin ? 'var(--crit)' : undefined }}>
+                        {formatNumber(s.errin)}
+                      </td>
+                      <td className="right num" style={{ color: s.errout ? 'var(--crit)' : undefined }}>
+                        {formatNumber(s.errout)}
+                      </td>
+                      <td className="right num" style={{ color: mtuOdd ? 'var(--warn)' : undefined }} title={mtuOdd ? 'Non-standard MTU' : undefined}>
+                        {formatNumber(s.mtu)}
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-        </div>
-
-        {/* RIGHT COLUMN: Remediation Plan & Agent Execution Trace */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          {/* Remediation Plan */}
-          <div className="noc-card">
-            <div className="noc-card-header">
-              <div className="noc-card-title">
-                <Shield size={13} style={{ color: '#10b981' }} />
-                Remediation Plan
-              </div>
-              <span className="noc-badge noc-badge-ok">READY</span>
-            </div>
-
-            <div style={{ padding: '0.9rem' }}>
-              <p style={{ fontSize: '0.725rem', color: '#94a3b8', marginBottom: '0.75rem' }}>
-                Plan generated by Remediation Agent v2.2. Sequential execution ensures zero-packet-drop transit failover.
-              </p>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                <div style={{ padding: '0.65rem', backgroundColor: '#0c0f15', border: '1px solid #1a2230', borderRadius: '3px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.2rem' }}>
-                    <span style={{ padding: '0.05rem 0.35rem', backgroundColor: '#38bdf8', color: '#000', fontSize: '0.625rem', fontFamily: 'var(--font-mono)', fontWeight: 700, borderRadius: '2px' }}>
-                      1
-                    </span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f1f5f9' }}>Graceful BGP Drain</span>
-                  </div>
-                  <div style={{ fontSize: '0.6875rem', color: '#94a3b8' }}>
-                    Apply BGP Community <strong style={{ color: '#38bdf8' }}>65001:0</strong> (graceful-shutdown) to peer 62.115.148.1 to depress MED.
-                  </div>
-                </div>
-
-                <div style={{ padding: '0.65rem', backgroundColor: '#0c0f15', border: '1px solid #1a2230', borderRadius: '3px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.2rem' }}>
-                    <span style={{ padding: '0.05rem 0.35rem', backgroundColor: '#38bdf8', color: '#000', fontSize: '0.625rem', fontFamily: 'var(--font-mono)', fontWeight: 700, borderRadius: '2px' }}>
-                      2
-                    </span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f1f5f9' }}>Dynamic Traffic Shift</span>
-                  </div>
-                  <div style={{ fontSize: '0.6875rem', color: '#94a3b8' }}>
-                    Shift all egress transit flow over backup link <strong style={{ color: '#38bdf8' }}>GigabitEthernet0/25</strong>.
-                  </div>
-                </div>
-
-                <div style={{ padding: '0.65rem', backgroundColor: '#0c0f15', border: '1px solid #1a2230', borderRadius: '3px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.2rem' }}>
-                    <span style={{ padding: '0.05rem 0.35rem', backgroundColor: '#38bdf8', color: '#000', fontSize: '0.625rem', fontFamily: 'var(--font-mono)', fontWeight: 700, borderRadius: '2px' }}>
-                      3
-                    </span>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f1f5f9' }}>Optic Reset & Calibration</span>
-                  </div>
-                  <div style={{ fontSize: '0.6875rem', color: '#94a3b8' }}>
-                    Execute interface admin-down on Gi0/24, trigger laser recalibration cycle, and monitor DOM.
-                  </div>
-                </div>
-              </div>
-
-              {/* CLI Payload Preview */}
-              <div style={{ marginTop: '0.85rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-                  <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: '#64748b', fontWeight: 700 }}>
-                    STAGED CLI PAYLOAD PREVIEW
-                  </span>
-                  <button
-                    onClick={copyCliPayload}
-                    className="noc-btn noc-btn-outline"
-                    style={{ height: '20px', padding: '0 0.45rem', fontSize: '0.5625rem' }}
-                  >
-                    {copiedPayload ? <Check size={10} /> : <Copy size={10} />}
-                    {copiedPayload ? 'Copied' : 'Copy'}
-                  </button>
-                </div>
-                <pre
-                  style={{
-                    padding: '0.65rem',
-                    backgroundColor: '#090c10',
-                    border: '1px solid #1a2230',
-                    borderRadius: '3px',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.6875rem',
-                    color: '#38bdf8',
-                    overflowX: 'auto',
-                  }}
-                >
-                  {cliPayload}
-                </pre>
-              </div>
-
-              <div style={{ marginTop: '0.85rem' }}>
-                <button
-                  onClick={() => handleAction(true)}
-                  disabled={isApproving || approvalStatus === 'approved'}
-                  className="noc-btn noc-btn-primary"
-                  style={{ width: '100%', height: '32px' }}
-                >
-                  <Play size={13} />
-                  {approvalStatus === 'approved' ? 'Payload Dispatched' : 'Approve & Dispatch Payload'}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Agent Execution Trace */}
-          <div className="noc-card">
-            <div className="noc-card-header">
-              <div className="noc-card-title">
-                <Activity size={13} style={{ color: '#38bdf8' }} />
-                Agent Execution Trace
-              </div>
-              <span style={{ fontSize: '0.625rem', color: '#10b981', fontFamily: 'var(--font-mono)' }}>6 NODES</span>
-            </div>
-
-            <div
-              style={{
-                padding: '0.85rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.65rem',
-                backgroundColor: '#090c10',
-              }}
-            >
-              {[
-                {
-                  agent: 'Detection Agent',
-                  time: '14:32:08',
-                  desc: 'Identified abnormal packet loss spike (34.2%) via sliding time-series threshold anomaly.',
-                },
-                {
-                  agent: 'Triage Agent',
-                  time: '14:32:09',
-                  desc: 'Classified incident as Physical Layer Optical Transit Degradation (P=0.942).',
-                },
-                {
-                  agent: 'Retriever Agent',
-                  time: '14:32:09',
-                  desc: 'Matched runbook RB-OPT-SFP-DRAIN-AND-CYCLE and hardware vendor errata.',
-                },
-                {
-                  agent: 'RCA Agent',
-                  time: '14:32:10',
-                  desc: 'Correlated optical Rx power plunge (-19.2 dBm) with buffer discards and transit route table.',
-                },
-                {
-                  agent: 'Remediation Agent',
-                  time: '14:32:11',
-                  desc: 'Synthesized 3-step zero-drop BGP drain and interface recalibration sequence.',
-                },
-                {
-                  agent: 'Approval Agent',
-                  time: '14:32:12',
-                  desc: 'Staged execution plan; locked automated execution pending human engineer signature.',
-                },
-              ].map((step, idx) => (
-                <div
-                  key={step.agent}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '0.65rem',
-                    borderBottom: idx < 5 ? '1px solid #141a24' : 'none',
-                    paddingBottom: '0.55rem',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '7px',
-                      height: '7px',
-                      borderRadius: '50%',
-                      backgroundColor: idx === 5 ? '#f59e0b' : '#10b981',
-                      marginTop: '4px',
-                      flexShrink: 0,
-                    }}
-                  />
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#f1f5f9' }}>
-                        {step.agent}
-                      </span>
-                      <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: '#64748b' }}>
-                        {step.time}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginTop: '2px', lineHeight: 1.35 }}>
-                      {step.desc}
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  paddingTop: '0.45rem',
-                  borderTop: '1px solid #141a24',
-                  fontSize: '0.625rem',
-                  color: '#64748b',
-                  fontFamily: 'var(--font-mono)',
-                }}
-              >
-                <span>Audit Hash: 0x9b4a...c71c</span>
-                <span style={{ color: '#38bdf8', cursor: 'pointer' }}>View Ledger</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
+
+      {event.rdma && (
+        <div>
+          <div className="section-label">RDMA counters</div>
+          <div className="kv-inline">
+            {(['qp_errors', 'rq_errors', 'srq_errors'] as const).map((k) => (
+              <div key={k}>
+                <span className="k">{k.replace('_', ' ')}</span>
+                <span className="num" style={{ color: Number(event.rdma?.[k]) > 0 ? 'var(--crit)' : undefined }}>
+                  {formatNumber(event.rdma?.[k])}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <div className="section-label">Kernel log (dmesg tail)</div>
+        {event.dmesg_tail ? <pre className="code">{event.dmesg_tail}</pre> : <span className="muted">Empty</span>}
+      </div>
+
+      {packets.length > 0 && (
+        <div>
+          <div className="section-label">Sample packets</div>
+          <div className="table-wrap" style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Source</th>
+                  <th>Destination</th>
+                  <th>Proto</th>
+                  <th className="right">Length</th>
+                </tr>
+              </thead>
+              <tbody>
+                {packets.map((p, i) => (
+                  <tr key={i}>
+                    <td className="mono">{p.src || '—'}</td>
+                    <td className="mono">{p.dst || '—'}</td>
+                    <td className="mono">{p.proto || '—'}</td>
+                    <td className="right num">{formatNumber(p.len)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const EvidenceTab: React.FC<{ event?: TelemetryEvent; detail: AIIncidentDetail | null }> = ({ event, detail }) => {
+  const signals = detail?.signals && Object.keys(detail.signals).length ? detail.signals : null;
+  if (!event && !signals) {
+    return (
+      <EmptyState
+        compact
+        title="Telemetry not available"
+        description="The originating event is no longer in the controller's event window."
+      />
+    );
+  }
+  return (
+    <div className="stack">
+      {event && (
+        <>
+          {eventSignal(event) === 'crit' && (
+            <Banner tone="crit" title="Event breached rule thresholds">
+              Interface errors ≥ 5 or RDMA QP errors ≥ 1 in this sample.
+            </Banner>
+          )}
+          <EventEvidence event={event} />
+        </>
+      )}
+      {signals && (
+        <div>
+          <div className="section-label">Signals extracted by the analysis engine</div>
+          <pre className="code code-light">{JSON.stringify(signals, null, 2)}</pre>
+        </div>
+      )}
     </div>
   );
 };
