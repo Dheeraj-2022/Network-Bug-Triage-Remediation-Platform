@@ -509,7 +509,8 @@ class AuditAgent(BaseAgent):
             "backend": state.rca.get("_backend"),
             "ts": _iso_now(),
         }
-        if self.deps.memory:
+        # Simulated/demo incidents must not pollute persistent incident history.
+        if self.deps.memory and not state.event.get("simulated"):
             self.deps.memory.record_incident(incident)
         state.log_step(self.name, "recorded incident to memory", incident)
         state.base_decision["ai_incident"] = incident

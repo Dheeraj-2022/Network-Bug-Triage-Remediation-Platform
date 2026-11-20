@@ -6,40 +6,43 @@ Controller Processor (full)
 - Runs rule-based triage (rules_engine)
 - Creates log embeddings & classifies logs (nlp_parser)
 - Runs ML triage (triage_model)
-- Correlates recent events in-memory
-- Invokes remediation via Ansible (controller.ansible_runner)
-- Audit logs remediation attempts and outcomes
+- Correlates recent events in-memory and builds topology-aware evidence
+- Submits remediation candidates to the shared RemediationPolicy, which only
+  previews them; execution happens after human approval
+  (`python -m controller.remediation approve <id> --approver <name>` or the API)
+- Audit logs triage decisions and proposals
 
 Usage (dry-run, no Kafka - idle until killed; use tests/validate_pipeline.py --mode dry to feed events):
     python3 controller/processor.py --dry-run
 
-Usage (Kafka, simulate Ansible):
+Usage (Kafka, proposals bound to simulation mode):
     python3 controller/processor.py --kafka localhost:9092 --dry-run
 
-Usage (Kafka, REAL Ansible playbook runs against infra/inventory.ini):
-    python3 controller/processor.py --kafka localhost:9092
+Usage (Kafka, proposals bound to REAL Ansible execution after approval; explicit opt-in):
+    python3 controller/processor.py --kafka localhost:9092 --execute
 
 Notes:
-- --dry-run only controls Ansible execution; Kafka consumption is enabled whenever --kafka is given
-- Requires controller/rules_engine.py, controller/nlp_parser.py, controller/triage_model.py
-- Ansible integration uses ansible-runner if present, otherwise subprocess to ansible-playbook
+- The processor never runs Ansible itself. Approved proposals execute in the
+  mode recorded at preview time; the approving process must run in the same mode.
+- Without --dry-run/--execute the mode comes from NBT_REMEDIATION_MODE (default: simulate).
 """
 import argparse
 import json
 import logging
 import os
-import subprocess
 import sys
 import time
-from collections import deque, defaultdict
+from collections import deque
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 # local imports (should exist from Phase 2)
-from controller.rules_engine import rule_based_triage, select_playbook
+from controller.rules_engine import rule_based_triage
 from controller.nlp_parser import LogParser
 from controller.triage_model import TriageModel
-from controller.ansible_runner import run_playbook
+from controller.evidence import build_evidence
+from controller.remediation import RemediationPolicy, summarize
+from controller.remediation.candidates import build_candidates
 
 # AI multi-agent layer (optional; degrades gracefully if unavailable)
 try:
@@ -64,7 +67,6 @@ LOG.addHandler(_handler)
 
 AUDIT_LOG_PATH = os.path.join(os.path.dirname(__file__), "..", "logs", "remediation_audit.log")
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "models", "xgb_model.joblib")
-PLAYBOOK_DIR = os.path.join(os.path.dirname(__file__), "..", "infra", "playbooks")
 KAFKA_CONNECT_TIMEOUT_SEC = int(os.environ.get("NBT_KAFKA_CONNECT_TIMEOUT", "60"))
 KAFKA_START_HINT = ("No Kafka broker reachable at %s. Start one with `docker compose up -d` "
                     "and wait for it to finish booting, or fix --kafka host:port.")
@@ -76,6 +78,13 @@ class KafkaUnavailable(RuntimeError):
 
 def iso_now():
     return datetime.now(timezone.utc).isoformat()
+
+
+def _ts(value: Any) -> Optional[datetime]:
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
 
 
 class SlidingStore:
@@ -113,6 +122,20 @@ class SlidingStore:
                         out.append(e.get("host"))
         return out
 
+    def context_for(self, event: Dict[str, Any]):
+        """Previous sample from the same host and the latest sample of every other host."""
+        previous, latest = None, {}
+        for e in self.events:
+            if e is event:
+                continue
+            if e.get("host") == event.get("host"):
+                t0, t1 = _ts(e.get("ts")), _ts(event.get("ts"))
+                if t0 and t1 and t0 < t1:
+                    previous = e
+            elif e.get("host"):
+                latest[e["host"]] = e
+        return previous, list(latest.values())
+
 
 def audit_log(entry: Dict[str, Any]):
     os.makedirs(os.path.dirname(AUDIT_LOG_PATH), exist_ok=True)
@@ -127,17 +150,22 @@ class Processor:
     Kafka consumer is created (events are fed via ``process_event``), a list of
     brokers enables consumption in ``run()``.
 
-    ``dry_run`` controls *whether Ansible really runs*: ``True`` prints the
-    playbook invocation instead of executing it.
+    ``dry_run=True`` binds every proposal to simulation mode (no infrastructure
+    change, even after approval). ``mode`` (``simulate``/``ansible``) or
+    NBT_REMEDIATION_MODE applies otherwise. Either way the processor itself
+    never executes a playbook: all remediation goes through the shared policy.
     """
 
     def __init__(self, kafka_bootstrap: Optional[List[str]] = None, topic: str = "telemetry.events",
-                 dry_run: bool = True, connect_timeout_sec: int = KAFKA_CONNECT_TIMEOUT_SEC):
+                 dry_run: bool = True, connect_timeout_sec: int = KAFKA_CONNECT_TIMEOUT_SEC,
+                 mode: Optional[str] = None, policy: Optional[RemediationPolicy] = None,
+                 enable_ai: bool = True):
         self.dry_run = dry_run
         self.topic = topic
         self.kafka_bootstrap = kafka_bootstrap
         self.consume = kafka_bootstrap is not None
         self.consumer = None
+        self.policy = policy or RemediationPolicy(mode="simulate" if dry_run else mode)
         if self.consume:
             if KafkaConsumer is None:
                 raise RuntimeError("kafka-python required for consumer mode (pip install kafka-python)")
@@ -145,8 +173,9 @@ class Processor:
         self.store = SlidingStore()
         self.log_parser = LogParser()
         self.model = TriageModel()
-        self.orchestrator = self._init_orchestrator()
-        LOG.info("Processor initialized (dry_run=%s) kafka=%s topic=%s", self.dry_run, self.kafka_bootstrap, self.topic)
+        self.orchestrator = self._init_orchestrator() if enable_ai else None
+        LOG.info("Processor initialized (remediation mode=%s) kafka=%s topic=%s",
+                 self.policy.mode, self.kafka_bootstrap, self.topic)
 
     def _connect_consumer(self, timeout_sec: int):
         """Create the consumer, retrying while the broker boots; raise KafkaUnavailable on timeout."""
@@ -201,66 +230,9 @@ class Processor:
                     correlated.append({"iface": nic, "hosts": list(set(peers + [event.get("host")]))})
         return {"correlated": correlated}
 
-    def attempt_remediation(self, targets: List[Dict[str, Any]], playbook_name: str, extra_vars: Dict[str, Any], canary_first: bool = True) -> bool:
-        """
-        Orchestrates remediation:
-        - if canary_first: apply playbook with --limit to first host; verify; then apply to rest.
-        - uses controller.ansible_runner.run_playbook to execute
-        - logs audit entries
-        """
-        if not targets:
-            LOG.info("No targets to remediate")
-            return False
-
-        # ensure playbook exists
-        playbook_path = os.path.join(PLAYBOOK_DIR, playbook_name)
-        if not os.path.exists(playbook_path):
-            LOG.error("Playbook not found: %s", playbook_path)
-            return False
-
-        # derive unique hosts list
-        hosts = []
-        for t in targets:
-            hosts.append(t.get("host"))
-        hosts = list(dict.fromkeys(hosts))  # preserve order, unique
-
-        # prepare canary and remaining
-        canary = hosts[0]
-        remaining = hosts[1:]
-
-        audit_entry = {"ts": iso_now(), "playbook": playbook_name, "targets": targets, "extra_vars": extra_vars, "status": "started"}
-        audit_log(audit_entry)
-
-        # run canary
-        LOG.info("Running canary remediation on %s using %s", canary, playbook_path)
-        ok = run_playbook(playbook_path, limit=canary, extra_vars=extra_vars, dry_run=self.dry_run)
-        audit_entry = {"ts": iso_now(), "playbook": playbook_name, "phase": "canary", "host": canary, "ok": ok}
-        audit_log(audit_entry)
-        if not ok:
-            LOG.error("Canary remediation failed on %s - attempting rollback (if rollback playbook exists)", canary)
-            # attempt rollback playbook naming convention: rollback_<playbook_name>
-            rb_playbook = os.path.join(PLAYBOOK_DIR, "rollback_" + playbook_name)
-            if os.path.exists(rb_playbook):
-                ok_rb = run_playbook(rb_playbook, limit=canary, extra_vars=extra_vars, dry_run=self.dry_run)
-                audit_log({"ts": iso_now(), "rollback_playbook": rb_playbook, "host": canary, "ok": ok_rb})
-            return False
-
-        # apply to remaining hosts
-        if remaining:
-            LOG.info("Applying remediation to remaining hosts: %s", ", ".join(remaining))
-            limit_arg = ",".join(remaining)
-            ok2 = run_playbook(playbook_path, limit=limit_arg, extra_vars=extra_vars, dry_run=self.dry_run)
-            audit_log({"ts": iso_now(), "playbook": playbook_path, "phase": "apply_remaining", "hosts": remaining, "ok": ok2})
-            if not ok2:
-                LOG.error("Remediation failed on remaining hosts; manual intervention required")
-                return False
-
-        LOG.info("Remediation completed successfully for playbook %s", playbook_name)
-        audit_log({"ts": iso_now(), "playbook": playbook_path, "status": "completed"})
-        return True
-
     def process_event(self, event: Dict[str, Any]):
         LOG.info("Processing event from host=%s id=%s", event.get("host"), event.get("event_id"))
+        previous, peers = self.store.context_for(event)
         self.store.add(event)
 
         # Rule-based triage
@@ -277,24 +249,30 @@ class Processor:
         # Correlation
         corr = self.correlate(event)
 
+        evidence = build_evidence(event, self.policy.registry, previous=previous, peer_samples=peers,
+                                  rule=rule, log_class=log_class)
         decision = {"ts": iso_now(), "host": event.get("host"), "event_id": event.get("event_id"),
-                    "rule": rule, "log_class": log_class, "ml": ml_result, "correlation": corr}
-        LOG.info("Decision: %s", json.dumps(decision, indent=2))
+                    "rule": rule, "log_class": log_class, "ml": ml_result, "correlation": corr,
+                    "evidence": evidence}
+        LOG.info("Decision for %s: rule=%s log_class=%s diagnosis=%s (%s)", event.get("event_id"),
+                 rule.get("action"), log_class, evidence["inference"]["fault_domain"],
+                 evidence["confidence"]["level"])
 
-        # AI multi-agent enrichment (RCA, remediation plan, risk). This augments
-        # the deterministic decision; it never replaces the rule/ML remediation
-        # path below, preserving backward compatibility.
+        # AI multi-agent enrichment (RCA, remediation plan, risk). Its plan is only
+        # a candidate for the shared policy below; it cannot execute anything.
+        ai_remediation = None
         if self.orchestrator is not None:
             try:
                 ai_result = self.orchestrator.run(
                     event,
                     {"rule": rule, "ml": ml_result, "log_class": log_class},
                 )
+                ai_remediation = ai_result.get("remediation")
                 decision["ai"] = {
                     "incident_id": ai_result.get("incident_id"),
                     "llm_backend": ai_result.get("llm_backend"),
                     "rca": ai_result.get("rca"),
-                    "remediation": ai_result.get("remediation"),
+                    "remediation": ai_remediation,
                     "context_sources": ai_result.get("context_sources", []),
                 }
                 audit_log({"ts": iso_now(), "event_id": event.get("event_id"),
@@ -302,44 +280,36 @@ class Processor:
             except Exception:
                 LOG.exception("AI workflow failed for event %s", event.get("event_id"))
 
-
-        # Decide to remediate if rule asks or ML predicts high priority
-        should_remediate = False
-        remediation_targets = []
-        reason = ""
-        if rule.get("action") == "remediate":
-            should_remediate = True
-            remediation_targets = rule.get("targets", [])
-            reason = rule.get("reason", "")
-        elif ml_result.get("priority_score", 0) >= 0.85:
-            should_remediate = True
-            # attempt to use model localization (if label is host or iface)
-            loc = ml_result.get("localization")
-            remediation_targets = [{"host": loc}] if loc else []
-            reason = f"ML-priority:{ml_result.get('priority_score')}"
+        candidates = build_candidates(rule, ml_result, log_class, ai_remediation)
+        if candidates:
+            proposal = self.policy.propose(source="processor", event=event, evidence=evidence,
+                                           candidates=candidates,
+                                           incident_ref=(decision.get("ai") or {}).get("incident_id")
+                                           or event.get("event_id"))
+            decision["remediation"] = summarize(proposal)
+            audit_log({"ts": iso_now(), "event_id": event.get("event_id"), "action": "remediation_proposed",
+                       "remediation": decision["remediation"]})
+            if proposal["status"] == "pending_approval":
+                LOG.info("Proposal %s awaits approval (mode=%s): python -m controller.remediation approve %s "
+                         "--approver <name> --digest %s", proposal["id"], proposal["mode"], proposal["id"],
+                         proposal["preview_digest"])
+            else:
+                LOG.info("Proposal %s is %s: %s", proposal["id"], proposal["status"], proposal.get("block_reason"))
         else:
             LOG.info("No remediation triggered for event %s", event.get("event_id"))
-
-        # trigger remediation if needed
-        if should_remediate and remediation_targets:
-            # choose playbook based on log_class / reason / target components
-            playbook = select_playbook(reason, log_class, remediation_targets)
-
-            extra_vars = {"targets": remediation_targets, "reason": reason, "ml_score": ml_result.get("priority_score", 0.0)}
-            ok = self.attempt_remediation(remediation_targets, playbook, extra_vars)
-            audit = {"decision": decision, "remediation_playbook": playbook, "remediation_ok": ok}
-            audit_log(audit)
-        else:
-            audit_log({"ts": iso_now(), "event_id": event.get("event_id"), "action": "no_remediation", "ml_score": ml_result.get("priority_score", 0.0)})
+            audit_log({"ts": iso_now(), "event_id": event.get("event_id"), "action": "no_remediation",
+                       "ml_score": ml_result.get("priority_score", 0.0)})
 
         return decision
 
     def run(self):
         if not self.consume:
-            LOG.info("Processor idle: no Kafka configured (use --kafka host:port). Ansible dry_run=%s", self.dry_run)
+            LOG.info("Processor idle: no Kafka configured (use --kafka host:port). Remediation mode=%s",
+                     self.policy.mode)
             while True:
                 time.sleep(5)
-        LOG.info("Consuming from Kafka %s topic=%s (Ansible dry_run=%s)", self.kafka_bootstrap, self.topic, self.dry_run)
+        LOG.info("Consuming from Kafka %s topic=%s (remediation mode=%s)", self.kafka_bootstrap, self.topic,
+                 self.policy.mode)
         try:
             for msg in self.consumer:
                 try:
@@ -354,7 +324,11 @@ def parse_args():
     p = argparse.ArgumentParser("processor")
     p.add_argument("--kafka", help="Kafka bootstrap servers (comma separated); enables consumption", default=None)
     p.add_argument("--topic", help="Kafka topic", default="telemetry.events")
-    p.add_argument("--dry-run", action="store_true", help="Simulate Ansible runs (Kafka consumption still happens if --kafka is set)")
+    p.add_argument("--dry-run", action="store_true",
+                   help="Bind proposals to simulation mode: nothing is changed even after approval "
+                        "(Kafka consumption still happens if --kafka is set)")
+    p.add_argument("--execute", action="store_true",
+                   help="Explicit opt-in: bind proposals to real Ansible execution after human approval")
     p.add_argument("--kafka-timeout", type=int, default=KAFKA_CONNECT_TIMEOUT_SEC,
                    help="Seconds to keep retrying the initial broker connection")
     return p.parse_args()
@@ -362,14 +336,18 @@ def parse_args():
 
 def main() -> int:
     args = parse_args()
+    if args.dry_run and args.execute:
+        LOG.error("--dry-run and --execute are mutually exclusive")
+        return 2
     bs = [s.strip() for s in args.kafka.split(",") if s.strip()] if args.kafka else None
     try:
         processor = Processor(kafka_bootstrap=bs, topic=args.topic, dry_run=args.dry_run,
-                              connect_timeout_sec=args.kafka_timeout)
+                              connect_timeout_sec=args.kafka_timeout,
+                              mode="ansible" if args.execute else None)
     except KafkaUnavailable as e:
         LOG.error("%s", e)
         return 1
-    except RuntimeError as e:
+    except (RuntimeError, ValueError) as e:
         LOG.error("%s", e)
         return 2
     try:

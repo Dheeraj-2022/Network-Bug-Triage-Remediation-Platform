@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Check, Minus, X } from 'lucide-react';
 import { IncidentTable } from '../components/IncidentTable';
+import { EvidencePanel, RemediationPanel } from '../components/EvidenceViews';
 import { Badge, Banner, EmptyState, Meter, PageHeader, Panel, RiskBadge, SeverityTag, StateBadge, cx } from '../components/ui';
 import { eventErrorCount, eventSignal, Incident } from '../lib/incidents';
 import { domainLabel, formatBytes, formatDateTime, formatNumber, formatPct, formatTime, relativeTime } from '../lib/format';
 import { hrefFor } from '../lib/routes';
 import { api } from '../services/api';
-import { AIIncidentDetail, AIStatus, AuditEntry, TelemetryEvent } from '../types';
+import { AIIncidentDetail, AIStatus, AuditEntry, RemediationProposal, TelemetryEvent } from '../types';
 import { CommonPageProps } from './common';
 
 interface Props extends CommonPageProps {
@@ -16,9 +17,10 @@ interface Props extends CommonPageProps {
   auditLog: AuditEntry[];
   aiStatus: AIStatus | null;
   onRequestApproval: (i: Incident, approve: boolean) => void;
+  onChanged?: () => void;
 }
 
-type Tab = 'analysis' | 'plan' | 'evidence' | 'trace';
+type Tab = 'evidence-policy' | 'analysis' | 'plan' | 'evidence' | 'trace';
 type StepState = 'done' | 'current' | 'failed' | 'skipped' | 'pending';
 
 interface Step {
@@ -35,41 +37,57 @@ const STEP_ICON: Record<StepState, React.ReactNode> = {
   pending: null,
 };
 
-function buildSteps(i: Incident, detail: AIIncidentDetail | null, executions: AuditEntry[]): Step[] {
+function buildSteps(i: Incident, detail: AIIncidentDetail | null, executions: AuditEntry[], proposal: RemediationProposal | null): Step[] {
   const hasAi = !!i.aiId;
   const approval: Step = (() => {
     switch (i.state) {
       case 'awaiting_approval':
         return { name: 'Approval', state: 'current', meta: 'Waiting for an engineer' };
       case 'approved':
-        return { name: 'Approval', state: 'done', meta: 'Approved' };
+      case 'resolved':
+      case 'verification_failed':
+      case 'inconclusive':
+      case 'execution_failed':
+        return { name: 'Approval', state: 'done', meta: proposal?.decision ? `Approved by ${proposal.decision.approver}` : 'Approved' };
       case 'rejected':
-        return { name: 'Approval', state: 'failed', meta: 'Rejected' };
+        return { name: 'Approval', state: 'failed', meta: proposal?.decision ? `Rejected by ${proposal.decision.approver}` : 'Rejected' };
+      case 'blocked':
+        return { name: 'Approval', state: 'failed', meta: 'Blocked by policy' };
+      case 'expired':
+        return { name: 'Approval', state: 'failed', meta: 'Approval expired' };
       case 'auto':
         return { name: 'Approval', state: 'skipped', meta: 'Not required (low risk)' };
       case 'manual':
         return { name: 'Approval', state: 'skipped', meta: 'No automated plan' };
       default:
-        return { name: 'Approval', state: 'skipped', meta: 'No gate on rules path' };
+        return { name: 'Approval', state: 'skipped', meta: 'No remediation proposed' };
     }
   })();
 
   const execution: Step = (() => {
-    if (i.state === 'rejected' || i.state === 'manual') return { name: 'Execution', state: 'skipped', meta: 'Not executed' };
+    if (['rejected', 'manual', 'blocked', 'expired'].includes(i.state)) return { name: 'Execution', state: 'skipped', meta: 'Not executed' };
     if (i.state === 'awaiting_approval') return { name: 'Execution', state: 'pending', meta: 'Blocked by approval gate' };
+    if (i.state === 'execution_failed') return { name: 'Execution', state: 'failed', meta: 'Execution failed' };
+    if (proposal?.execution) return { name: 'Execution', state: 'done', meta: proposal.execution.simulated ? 'Simulated (no change)' : 'Executed' };
     if (executions.length) return { name: 'Execution', state: 'done', meta: `${executions[0].status || 'recorded'} · ${formatTime(executions[0].ts)}` };
-    if (i.state === 'approved' || i.state === 'auto') return { name: 'Execution', state: 'done', meta: 'Dispatched by orchestrator' };
+    if (i.state === 'approved' || i.state === 'auto') return { name: 'Execution', state: 'done', meta: 'Dispatched' };
     return { name: 'Execution', state: 'pending' };
   })();
 
   const resolved = detail?.validation?.resolved;
-  const validation: Step = !hasAi
-    ? { name: 'Validation', state: 'skipped', meta: 'Analysis engine not involved' }
-    : resolved === true
-      ? { name: 'Validation', state: 'done', meta: `Resolved · ${formatPct(detail?.validation?.confidence)}` }
-      : resolved === false
-        ? { name: 'Validation', state: 'failed', meta: detail?.validation?.residual_risk ? `Residual risk: ${detail.validation.residual_risk}` : 'Not resolved' }
-        : { name: 'Validation', state: 'pending', meta: execution.state === 'done' ? 'Awaiting validation' : undefined };
+  const validation: Step = proposal?.verification
+    ? proposal.verification.outcome === 'passed'
+      ? { name: 'Post-check', state: 'done', meta: 'Passed' }
+      : proposal.verification.outcome === 'failed'
+        ? { name: 'Post-check', state: 'failed', meta: 'Failed — not resolved' }
+        : { name: 'Post-check', state: 'current', meta: 'Inconclusive — not resolved' }
+    : !hasAi
+      ? { name: 'Post-check', state: execution.state === 'done' ? 'pending' : 'skipped', meta: execution.state === 'done' ? 'Awaiting telemetry' : undefined }
+      : resolved === true
+        ? { name: 'Post-check', state: 'done', meta: `Resolved · ${formatPct(detail?.validation?.confidence)}` }
+        : resolved === false
+          ? { name: 'Post-check', state: 'failed', meta: detail?.validation?.residual_risk ? `Residual risk: ${detail.validation.residual_risk}` : 'Not resolved' }
+          : { name: 'Post-check', state: 'pending', meta: execution.state === 'done' ? 'Awaiting validation' : undefined };
 
   return [
     { name: 'Detected', state: 'done', meta: formatTime(i.ts) + ' UTC' },
@@ -78,9 +96,11 @@ function buildSteps(i: Incident, detail: AIIncidentDetail | null, executions: Au
       state: 'done',
       meta: `${i.ruleAction === 'remediate' ? 'Rule breach' : 'Rule ok'} · ML ${i.mlPriority.toFixed(2)}`,
     },
-    hasAi
-      ? { name: 'Root cause', state: 'done', meta: `${domainLabel(i.faultDomain)} · ${formatPct(i.confidence)}` }
-      : { name: 'Root cause', state: 'skipped', meta: 'Analysis engine disabled' },
+    i.decision.evidence
+      ? { name: 'Root cause', state: 'done', meta: `${domainLabel(i.decision.evidence.inference.fault_domain)} · evidence ${i.decision.evidence.confidence.level}` }
+      : hasAi
+        ? { name: 'Root cause', state: 'done', meta: `${domainLabel(i.faultDomain)} · model ${formatPct(i.confidence)}` }
+        : { name: 'Root cause', state: 'skipped', meta: 'Analysis engine disabled' },
     i.playbook
       ? { name: 'Plan', state: 'done', meta: i.playbook }
       : { name: 'Plan', state: 'failed', meta: 'No playbook matched' },
@@ -90,15 +110,35 @@ function buildSteps(i: Incident, detail: AIIncidentDetail | null, executions: Au
   ];
 }
 
-export const IncidentDetailPage: React.FC<Props> = ({ incidentKey, incidents, events, auditLog, aiStatus, loaded, navigate, onRequestApproval }) => {
+export const IncidentDetailPage: React.FC<Props> = ({ incidentKey, incidents, events, auditLog, loaded, navigate, onRequestApproval, onChanged }) => {
   const incident = incidents.find((i) => i.key === incidentKey);
-  const [tab, setTab] = useState<Tab>('analysis');
+  const [tab, setTab] = useState<Tab>('evidence-policy');
   const [detail, setDetail] = useState<AIIncidentDetail | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [proposal, setProposal] = useState<RemediationProposal | null>(null);
+  const [proposalError, setProposalError] = useState<string | null>(null);
 
   const aiId = incident?.aiId;
   const aiStatusKey = incident?.state;
+  const remediationId = incident?.remediationId;
+
+  useEffect(() => {
+    if (!remediationId) return;
+    let cancelled = false;
+    api
+      .getRemediation(remediationId)
+      .then((p) => {
+        if (!cancelled) {
+          setProposal(p);
+          setProposalError(null);
+        }
+      })
+      .catch((e: Error) => !cancelled && setProposalError(e.message));
+    return () => {
+      cancelled = true;
+    };
+  }, [remediationId, aiStatusKey]);
 
   useEffect(() => {
     if (!aiId) return;
@@ -170,7 +210,7 @@ export const IncidentDetailPage: React.FC<Props> = ({ incidentKey, incidents, ev
     );
   }
 
-  const steps = buildSteps(incident, detail, executions);
+  const steps = buildSteps(incident, detail, executions, proposal);
   const awaiting = incident.state === 'awaiting_approval';
   const trace = detail?.trace ?? [];
   const sources = (detail?.context_sources ?? incident.contextSources ?? []).map((s) => (typeof s === 'string' ? s : JSON.stringify(s)));
@@ -206,8 +246,7 @@ export const IncidentDetailPage: React.FC<Props> = ({ incidentKey, incidents, ev
       {awaiting && (
         <Banner tone="warn" title="Approval required before this plan can run">
           The orchestrator proposed <span className="mono">{incident.playbook || 'a playbook'}</span> at{' '}
-          {incident.risk || 'unknown'} risk.{' '}
-          {aiStatus?.require_human_approval ? 'All plans require sign-off by policy.' : 'Medium and high-risk plans require sign-off.'}
+          {incident.risk || 'unknown'} risk. Every remediation requires sign-off under the shared remediation policy.
         </Banner>
       )}
 
@@ -236,6 +275,7 @@ export const IncidentDetailPage: React.FC<Props> = ({ incidentKey, incidents, ev
           <div className="tabs" role="tablist" aria-label="Incident details">
             {(
               [
+                ['evidence-policy', 'Evidence & remediation'],
                 ['analysis', 'Root cause'],
                 ['plan', 'Remediation plan'],
                 ['evidence', 'Diagnostic evidence'],
@@ -264,6 +304,28 @@ export const IncidentDetailPage: React.FC<Props> = ({ incidentKey, incidents, ev
               </div>
             ) : (
               <>
+                {tab === 'evidence-policy' && (
+                  <div className="stack">
+                    {incident.decision.evidence ? (
+                      <EvidencePanel evidence={incident.decision.evidence} />
+                    ) : (
+                      <EmptyState compact title="No deterministic evidence recorded" description="This decision predates the evidence builder." />
+                    )}
+                    <div className="section-label">Remediation (shared policy)</div>
+                    {proposalError && <Banner tone="crit" title="Could not load the remediation proposal">{proposalError}</Banner>}
+                    {proposal ? (
+                      <RemediationPanel
+                        proposal={proposal}
+                        onChanged={(p) => {
+                          setProposal(p);
+                          onChanged?.();
+                        }}
+                      />
+                    ) : (
+                      !remediationId && <EmptyState compact title="No remediation proposed" description="No rule, ML or AI candidate was raised for this event." />
+                    )}
+                  </div>
+                )}
                 {tab === 'analysis' && <AnalysisTab incident={incident} detail={detail} sources={sources} />}
                 {tab === 'plan' && <PlanTab incident={incident} detail={detail} actions={approvalActions} />}
                 {tab === 'evidence' && <EvidenceTab event={event} detail={detail} />}

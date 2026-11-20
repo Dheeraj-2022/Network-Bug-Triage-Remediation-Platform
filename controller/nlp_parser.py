@@ -12,6 +12,7 @@ Dependencies:
 
 from typing import List, Dict
 import logging
+import os
 import numpy as np
 
 try:
@@ -26,7 +27,8 @@ class LogParser:
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
         self.model = None
         self.embedding_dim = 384  # default dim for MiniLM; overridden if model loads
-        if SentenceTransformer:
+        # NBT_DISABLE_EMBEDDINGS=1 skips model loading (fast, offline, deterministic tests).
+        if SentenceTransformer and os.environ.get("NBT_DISABLE_EMBEDDINGS", "").lower() not in ("1", "true", "yes"):
             try:
                 self.model = SentenceTransformer(model_name)
                 # Use the newer method name if available, fall back to legacy

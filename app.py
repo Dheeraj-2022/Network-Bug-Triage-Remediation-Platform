@@ -358,7 +358,6 @@ def api_ai_approve():
     if not incident_id:
         return jsonify({"error": "incident_id required"}), 400
 
-    orchestrator = _get_orchestrator()
     with _lock:
         target = next(
             (r for r in reversed(_ai_incidents) if r.get("incident_id") == incident_id),
@@ -371,22 +370,13 @@ def api_ai_approve():
         target.get("remediation", {})["status"] = "rejected"
         return jsonify({"ok": True, "status": "rejected", "incident_id": incident_id})
 
-    # Approve; run validation + audit continuation if orchestrator is present.
-    target.get("remediation", {})["status"] = "approved"
-    result = target
-    if orchestrator is not None:
-        try:
-            result = orchestrator.resume_after_approval(target)
-            with _lock:
-                _ai_incidents.append(result)
-        except Exception:
-            LOG.exception("resume_after_approval failed")
+    # The legacy Flask app is outside the shared remediation policy boundary, so it
+    # must not mark a plan approved/executed. Approvals go through the FastAPI service.
     return jsonify({
-        "ok": True,
-        "status": "approved",
+        "error": "approval is not supported by the legacy Flask app; run `python main.py` and approve via "
+                 "POST /api/remediations/{id}/decision (shared remediation policy)",
         "incident_id": incident_id,
-        "validation": result.get("validation", {}),
-    })
+    }), 409
 
 
 @app.route("/api/inject", methods=["POST"])

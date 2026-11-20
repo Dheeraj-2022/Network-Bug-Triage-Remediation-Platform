@@ -1,17 +1,48 @@
 # Network Bug Triage & Remediation Platform
 
 ## 📌 Overview
-This platform automates **detection, correlation, and remediation** of network issues across a multi-VM environment.  
-It integrates **network telemetry (kernel logs, NIC stats, RDMA counters)** with **AI/ML (XGBoost, NLP log parsing)** to:
-- Detect kernel, driver, and RDMA errors
-- Correlate across a multi-VM topology
-- Apply safe remediation (MTU fixes, driver restarts, config rollbacks) via **Ansible**
+> We turn noisy Linux and RDMA network telemetry into an evidence-backed diagnosis,
+> a human-approved fix, and a verified outcome.
+
+The MVP is scoped to **Linux/RDMA interface faults — chiefly MTU mismatches and
+driver/network errors** on hosts described in a topology registry. It:
+- Collects interface counters, MTU, RDMA QP counters and kernel log lines (agent).
+- Triages them with deterministic rules, a log classifier, an optional XGBoost
+  model and an optional AI layer.
+- Builds **deterministic, topology-aware evidence**: expected vs observed values,
+  counter deltas, exact log lines, host/interface/peer localization, path and
+  blast radius, and change correlation (correlation only, never proof).
+- Sends every remediation candidate (rules, ML, AI, API, Kafka) through **one
+  remediation policy**: allowlisted actions, validated targets, a preview, human
+  approval, simulation by default, a deterministic post-check and an audit trail.
+
+What it does **not** claim: broad vendor coverage, autonomous production
+remediation, or real-world accuracy. All bundled data (demo, golden scenarios,
+`data/eval_labeled.json`) is synthetic.
 
 ## 🏗️ Architecture
 - **Agent (per VM)**: Collects telemetry → pushes JSON events to Kafka  
-- **Controller**: Consumes events → applies rule-based + ML triage → triggers remediation playbooks  
+- **Controller**: Consumes events → rules + ML triage → evidence → remediation *proposals* (never executes directly)  
+- **Remediation policy** (`controller/remediation/`): preview → approval → execute (simulate by default) → post-check → audit  
 - **Infra**: Multi-VM setup with Vagrant/libvirt + Soft-RoCE for RDMA  
-- **ML/NLP**: XGBoost classifier + transformer-based log embeddings
+- **ML/NLP**: XGBoost classifier + transformer-based log embeddings (both optional; deterministic fallbacks)
+
+### Event → outcome call graph
+```
+FastAPI /api/process | /api/inject | demo loader         Kafka → controller.processor.Processor
+                 \                                     /
+        rules_engine + nlp_parser + triage_model (+ optional AI orchestrator)
+                                   |
+             controller.evidence.build_evidence (+ controller.topology registry)
+                                   |
+      controller.remediation.candidates.build_candidates (rules | ml | ai)
+                                   |
+   RemediationPolicy.propose → stored preview (status pending_approval | blocked)
+                                   |
+   POST /api/remediations/{id}/decision | POST /api/ai/approve | python -m controller.remediation approve
+                                   |
+   RemediationPolicy.decide → executor (simulate | ansible, bound at preview) → verify (post-check) → audit
+```
 
 ## 🏗️ System Architecture
 
@@ -60,10 +91,11 @@ Telemetry Agent → Kafka → Orchestrator (LangGraph StateGraph)
   credentials the layer falls back to a deterministic offline reasoner + numpy
   cosine retrieval**, so the platform still works fully air-gapped (the
   LangGraph executor is used either way).
-- **Non-invasive** — the legacy rule/ML/Ansible path is untouched; the AI layer
-  augments the decision and is fully optional (toggle via `NBT_AI_ENABLED`).
-- **Human approval** — AI-generated remediations are held `pending_approval`
-  and executed only after approval via the dashboard/API.
+- **Non-invasive** — the AI layer augments the decision and is fully optional
+  (toggle via `NBT_AI_ENABLED`). Its remediation plan is only a *candidate* for
+  the shared remediation policy; it cannot execute anything.
+- **Human approval** — every remediation (rules, ML or AI) is held
+  `pending_approval` by the shared policy and executed only after approval.
 - **Hybrid retrieval** — vector search + keyword search + incident history over
   runbooks, RDMA docs, kernel-log patterns and past remediation records.
 - **Memory** — conversation, incident, host-history, remediation-history and
@@ -81,13 +113,16 @@ environment variables:
 | `NBT_VERTEX_LOCATION`, `NBT_VERTEX_MODEL` | Vertex region / model |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Service-account JSON for Vertex |
 
-### API endpoints (Flask)
+### AI API endpoints (FastAPI)
 | Endpoint | Description |
 |----------|-------------|
 | `GET /api/ai/status` | LLM backend + impl, executor (langgraph/sequential), retrieval, memory & metrics |
 | `GET /api/ai/incidents` | Recent multi-agent incidents (RCA + plans) |
 | `GET /api/ai/incident/<id>` | Full agent trace for one incident |
-| `POST /api/ai/approve` | Approve/reject a pending remediation |
+| `POST /api/ai/approve` | Approve/reject via the shared remediation policy (`approver`, optional `preview_digest`) |
+
+The legacy Flask app (`app.py`) still serves the old dashboard but **refuses
+approvals** (HTTP 409), because it is outside the remediation policy boundary.
 
 ### Evaluation
 A reproducible harness measures fault-localization and fault-domain accuracy:
@@ -103,6 +138,123 @@ keyword the classifier keys on, and localization is scored against the event's
 own host), so the score validates the end-to-end pipeline rather than proving a
 real-world accuracy figure. Replace it with a labelled production-traffic set
 for a representative measurement.
+
+## 🛡️ Remediation safety model
+
+All remediation entry points — FastAPI triage, `/api/ai/approve`,
+`/api/remediations/{id}/decision`, the Kafka `controller.processor` and the
+`python -m controller.remediation` CLI — go through
+`controller.remediation.RemediationPolicy`. Nothing else calls Ansible
+(a test enforces that `run_playbook` is only referenced by the policy executor).
+
+| Step | What the policy enforces |
+|------|--------------------------|
+| Allowlist | `set_mtu` → `remediate_mtu.yml`, `restart_driver` → `restart_driver.yml`, `collect_forensics` → `collect_forensics.yml`. Anything else is `blocked`. |
+| Applicability | The action must fit the deterministic fault domain (e.g. `set_mtu` only with a *confirmed* observed-vs-intended MTU mismatch; `restart_driver` only for driver/link faults and allowlisted modules). |
+| Targets | Host and interface must exist in the topology registry (`data/topology/*.json`), names must match strict patterns, and requested targets must match the localized fault. In `ansible` mode the host must also be in `infra/inventory.ini [agents]`. |
+| Variables | Built by the policy from validated values (e.g. integer MTU 1280–9216 from topology intent). Rule/ML/LLM text and `extra_vars` are ignored and listed in `preview.ignored_inputs`. |
+| Preview | Exact action, playbook, targets, `--limit`, variables, risk, blast radius, rollback notes, post-check and a `preview_digest`. |
+| Approval | Always required. Decisions are compare-and-set: duplicate, concurrent, expired (`NBT_APPROVAL_TTL_SECONDS`, default 3600) or changed-preview (`preview_digest` mismatch) decisions return 409. |
+| Execution | Uses the mode bound at preview time. `simulate` (default) changes nothing. `ansible` requires explicit opt-in and an approving process in the same mode. No automatic retry or rollback. |
+| Post-check | Re-reads the diagnosis signals: MTU equals intent, rx/tx error counters stop increasing across ≥2 post-change samples, RDMA `qp_errors` too if they were rising. `failed`/`inconclusive` are never reported as resolved. |
+| Audit | `recommended`, `previewed`/`blocked`, `approved`/`rejected` (with approver), `simulated`/`executed`, `post_check` — persisted in SQLite (`logs/remediation.sqlite3`, override with `NBT_REMEDIATION_DB`). |
+
+**Modes**
+
+| Setting | Effect |
+|---------|--------|
+| `NBT_REMEDIATION_MODE=simulate` (default) | Previews are bound to simulation; approval records what *would* run. |
+| `NBT_REMEDIATION_MODE=ansible` | Previews are bound to real Ansible execution after approval. Use only on an isolated testbed with a populated inventory. |
+| `processor.py --dry-run` | Same as `simulate` for that process (previous `--dry-run` behaviour: no real changes). |
+| `processor.py --execute` | Same as `ansible` for that process. **Behaviour change:** without either flag the processor no longer runs Ansible by itself; it only creates proposals. |
+
+## 🧪 Deterministic two-host MTU demo (simulated)
+
+`gpu-a` and `gpu-b` exchange RoCE traffic through `leaf-1`
+(`data/topology/demo_mtu_two_host.json`). A reimage left `gpu-b ens1f0` at
+MTU 1500 while the fabric intent is 9000 (`data/demo/mtu_two_host.json`).
+IDs and telemetry timestamps are fixed (scenario clock `2026-01-15T10:00Z`);
+every record is tagged `simulated: true`.
+
+Loading the demo removes **only** records tagged `demo:mtu-two-host`
+(in-memory events/decisions/AI incidents and the demo's proposals/audit rows)
+and replays three samples through the real triage path. Re-running yields the
+same IDs and evidence without duplicates.
+
+**UI:** start the backend and frontend, open *MTU demo (simulated)*, choose the
+scripted post-check outcome (passes / fails / inconclusive), click *Load demo*,
+inspect topology → evidence → preview, enter your name and approve, then read
+the before/after checks and audit trail.
+
+**API:**
+```bash
+curl -X POST localhost:8000/api/demo/mtu-two-host/load -H 'Content-Type: application/json' -d '{"post_check":"pass"}'
+curl localhost:8000/api/demo/mtu-two-host            # evidence, proposal (id + preview_digest), audit
+curl -X POST localhost:8000/api/remediations/<id>/decision -H 'Content-Type: application/json' \
+     -d '{"approved":true,"approver":"alice","preview_digest":"<digest>"}'
+curl -X POST localhost:8000/api/demo/mtu-two-host/reset
+```
+
+Expected (pass variant): diagnosis `MTU_MISMATCH` (confirmed, evidence strength
+`high`), localization `gpu-b/ens1f0 → leaf-1 Ethernet2` on path
+`gpu-a ↔ gpu-b`, blast radius `gpu-a`, `leaf-1`; `CHG-DEMO-001` (MTU change on
+gpu-b ens1f0) *relevant*, the more recent `CHG-DEMO-002` (unused leaf port
+description) *unrelated*; proposal `set_mtu desired_mtu=9000 --limit gpu-b`,
+status `resolved` after approval. The `fail` and `inconclusive` variants end in
+`verification_failed` and `verification_inconclusive`.
+
+Random fault injection (`/api/inject`) remains available as an exploratory
+feature against the synthetic `node1–node5` lab topology.
+
+### Evidence model (per decision: `decision.evidence`)
+`observed_facts` (each with a source: telemetry event, topology record, or exact
+log line), `localization` (host/interface/peer, `resolved|partial|unresolved`),
+`mtu_checks` (expected vs observed), `counters` (before/after/delta/window),
+`log_lines`, `inference` (deterministic fault domain + reasoning that cites fact
+IDs), `confidence` (an evidence-strength level from named checks plus
+limitations — **not a probability**), `scope` (direct vs blast radius),
+`change_correlation` (factors + heuristic relevance score; correlation, not
+causation) and, if the AI layer ran, a separately labelled `model_explanation`.
+
+### Remediation & demo endpoints
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/auth` | Public: whether an API key is required and the remediation mode |
+| `GET /api/remediations` / `GET /api/remediations/{id}` | Proposals (preview, decision, execution, verification, audit) |
+| `POST /api/remediations/{id}/decision` | `{approved, approver, preview_digest?, reason?}` |
+| `POST /api/remediations/{id}/verify` | Re-run the post-check with telemetry received since execution |
+| `GET /api/remediations/audit` | Persistent audit trail |
+| `GET/POST /api/demo/mtu-two-host[/load\|/reset]` | Demo state / replay / scoped removal |
+| `GET /api/topology/{topology_id}` | Topology nodes, links and paths |
+
+Kafka/CLI operators approve with:
+```bash
+python -m controller.remediation list
+python -m controller.remediation approve <id> --approver alice --digest <preview_digest>
+python -m controller.remediation verify <id> --samples post_samples.json
+```
+
+### API key and deployment boundary
+- The API is **unauthenticated unless `NBT_API_KEY` is set**. Keep the default
+  `127.0.0.1` bind for local/demo use; `main.py` prints a warning when bound
+  elsewhere without a key.
+- With `NBT_API_KEY` set, every `/api/*` route except `/api/auth` requires
+  `X-API-Key`. The UI asks for the key at runtime and keeps it in
+  `sessionStorage`; never put it in `VITE_*` variables (they ship in the bundle).
+- The key is a shared secret, and approver names are self-asserted. For anything
+  beyond a local demo, put the API behind an authenticating reverse proxy/SSO.
+
+## ✅ Validation commands
+```powershell
+$env:NBT_DISABLE_EMBEDDINGS="1"   # skip sentence-transformers model load (faster, offline)
+python -m unittest tests.test_remediation_policy tests.test_golden_scenarios tests.test_api_demo -v
+python -m tests.test_golden_scenarios          # scenario report with per-dimension n/N
+python -m tests.test_ai_layer                  # note: appends to controller/ai/store (git-ignored runtime state)
+python -m tests.validate_pipeline --mode dry --count 4
+cd frontend; npm run build; npm run lint
+```
+The golden scenarios are hand-written fixtures; their scores measure agreement
+with those fixtures, not real-world accuracy.
 
 ## ▶️ Running
 
@@ -125,6 +277,12 @@ python app.py    # Flask:   http://127.0.0.1:5000  (legacy dashboard)
 |----------|---------|
 | `NBT_FASTAPI_HOST` / `NBT_FASTAPI_PORT` | FastAPI bind address (default `127.0.0.1:8000`) |
 | `NBT_CORS_ORIGINS` | Extra comma-separated CORS origins |
+| `NBT_API_KEY` | Optional shared secret for `/api/*` (see above) |
+| `NBT_REMEDIATION_MODE` | `simulate` (default) or `ansible` |
+| `NBT_REMEDIATION_DB` | SQLite path for proposals/audit (default `logs/remediation.sqlite3`) |
+| `NBT_APPROVAL_TTL_SECONDS` | Approval window for a preview (default 3600) |
+| `NBT_TOPOLOGY_DIR` | Topology registry directory (default `data/topology`) |
+| `NBT_DISABLE_EMBEDDINGS` | `1` skips loading the sentence-transformers model |
 | `NBT_HOST` / `NBT_PORT` / `NBT_DEBUG` | Flask bind address / debug mode |
 | `NBT_SECRET_KEY` | Flask session key (random per process if unset) |
 
@@ -145,11 +303,15 @@ python -m tests.test_ai_layer
 ### 5. Kafka mode (requires Docker)
 ```bash
 docker compose up -d                                   # ZooKeeper + Kafka on localhost:9092
-python -m controller.processor --kafka localhost:9092  # add --dry-run to skip real Ansible runs
+python -m controller.processor --kafka localhost:9092 --dry-run   # proposals bound to simulation
 python -m tests.validate_pipeline --mode kafka --kafka localhost:9092 --count 5
+python -m controller.remediation list                  # review / approve proposals
 ```
-Without `--dry-run` the processor executes real playbooks against `infra/inventory.ini`
-(hosts are commented out by default). UI-triggered remediation is always simulated.
+The processor never runs playbooks itself. `--execute` (or
+`NBT_REMEDIATION_MODE=ansible`) binds proposals to real execution against
+`infra/inventory.ini` (hosts are commented out by default), still only after
+approval. Kafka-sourced hosts must also be in the topology registry, otherwise
+proposals are `blocked`.
 
 ### 6. Agent / multi-VM deployment (Linux)
 ```bash

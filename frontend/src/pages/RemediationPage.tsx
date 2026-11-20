@@ -11,23 +11,20 @@ interface Props extends CommonPageProps {
   incidents: Incident[];
   aiStatus: AIStatus | null;
   auditLog: AuditEntry[];
+  remediationMode?: string | null;
   onRequestApproval: (i: Incident, approve: boolean) => void;
 }
 
-export const RemediationPage: React.FC<Props> = ({ incidents, aiStatus, auditLog, loaded, navigate, onRequestApproval }) => {
+const DISPATCHED = new Set(['approved', 'auto', 'dry_run', 'resolved', 'inconclusive', 'verification_failed', 'execution_failed']);
+
+export const RemediationPage: React.FC<Props> = ({ incidents, auditLog, remediationMode, loaded, navigate, onRequestApproval }) => {
   const awaiting = useMemo(() => incidents.filter((i) => i.state === 'awaiting_approval'), [incidents]);
-  const inFlight = useMemo(() => incidents.filter((i) => i.state === 'approved' || i.state === 'auto' || i.state === 'dry_run'), [incidents]);
-  const manual = useMemo(() => incidents.filter((i) => i.state === 'manual'), [incidents]);
-  const rejected = useMemo(() => incidents.filter((i) => i.state === 'rejected'), [incidents]);
+  const inFlight = useMemo(() => incidents.filter((i) => DISPATCHED.has(i.state)), [incidents]);
+  const manual = useMemo(() => incidents.filter((i) => i.state === 'manual' || i.state === 'blocked'), [incidents]);
+  const rejected = useMemo(() => incidents.filter((i) => i.state === 'rejected' || i.state === 'expired'), [incidents]);
   const recentRuns = auditLog.slice(-10).reverse();
 
-  const policy = !aiStatus
-    ? '—'
-    : !aiStatus.enabled
-      ? 'Analysis engine disabled — rule-triggered playbooks run without a gate'
-      : aiStatus.require_human_approval
-        ? 'Every plan requires engineer approval'
-        : 'Medium and high-risk plans require engineer approval; low-risk plans run automatically';
+  const policy = 'Every remediation (rules, ML or AI) is validated by the shared policy and requires engineer approval';
 
   return (
     <>
@@ -45,29 +42,31 @@ export const RemediationPage: React.FC<Props> = ({ incidents, aiStatus, auditLog
         <div className="stat">
           <div className="stat-label">Dispatched</div>
           <div className="stat-value">{loaded ? inFlight.length : '—'}</div>
-          <div className="stat-meta">Approved, auto or rule-triggered</div>
+          <div className="stat-meta">Approved; see state for post-check outcome</div>
         </div>
         <div className="stat">
           <div className="stat-label">Manual triage</div>
           <div className={`stat-value${manual.length ? ' crit' : ''}`}>{loaded ? manual.length : '—'}</div>
-          <div className="stat-meta">No automated plan available</div>
+          <div className="stat-meta">No plan passed the policy</div>
         </div>
         <div className="stat">
           <div className="stat-label">Rejected</div>
           <div className="stat-value">{loaded ? rejected.length : '—'}</div>
-          <div className="stat-meta">Plans declined by an engineer</div>
+          <div className="stat-meta">Declined or expired</div>
         </div>
         <div className="stat" style={{ gridColumn: 'span 2' }}>
           <div className="stat-label">Approval policy</div>
           <div style={{ marginTop: 4 }}>{policy}</div>
-          <div className="stat-meta">Executor: {aiStatus?.executor || 'dry-run'}</div>
+          <div className="stat-meta">
+            Execution mode: {remediationMode === 'ansible' ? 'REAL Ansible (operator opt-in)' : remediationMode === 'simulate' ? 'simulation (no infrastructure change)' : '—'}
+          </div>
         </div>
       </div>
 
       <Panel
         title="Approval required"
         count={awaiting.length}
-        sub="Highest priority first. Approving resumes the orchestrator: execution, then validation."
+        sub="Highest priority first. Approving runs the previewed action in its bound mode, then the post-check."
         className={awaiting.length ? 'attention' : undefined}
         flush
       >
@@ -103,7 +102,7 @@ export const RemediationPage: React.FC<Props> = ({ incidents, aiStatus, auditLog
           </Panel>
 
           {manual.length > 0 && (
-            <Panel title="Manual triage" count={manual.length} sub="The analysis engine found no safe automated action" flush>
+            <Panel title="Manual triage" count={manual.length} sub="No candidate passed the shared remediation policy" flush>
               <IncidentTable incidents={manual} navigate={navigate} columns={['severity', 'incident', 'host', 'confidence', 'detected']} />
             </Panel>
           )}

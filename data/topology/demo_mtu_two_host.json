@@ -1,0 +1,73 @@
+{
+  "topology_id": "demo-mtu-two-host",
+  "label": "Demo fabric: two RoCE hosts through one leaf switch",
+  "simulated": true,
+  "scenario_id": "demo:mtu-two-host",
+  "description": "SIMULATED fixture used by the deterministic MTU-mismatch demo. Not discovered from a real network.",
+  "hosts": [
+    {
+      "id": "host:gpu-a",
+      "name": "gpu-a",
+      "role": "gpu-compute",
+      "mgmt_ip": "192.0.2.11",
+      "interfaces": [
+        {
+          "id": "iface:gpu-a:ens1f0",
+          "name": "ens1f0",
+          "driver": "mlx5_core",
+          "rdma_device": "mlx5_0",
+          "ip": "10.20.0.11",
+          "intended_mtu": 9000,
+          "peer": "port:leaf-1:Ethernet1"
+        }
+      ]
+    },
+    {
+      "id": "host:gpu-b",
+      "name": "gpu-b",
+      "role": "gpu-compute",
+      "mgmt_ip": "192.0.2.12",
+      "interfaces": [
+        {
+          "id": "iface:gpu-b:ens1f0",
+          "name": "ens1f0",
+          "driver": "mlx5_core",
+          "rdma_device": "mlx5_0",
+          "ip": "10.20.0.12",
+          "intended_mtu": 9000,
+          "peer": "port:leaf-1:Ethernet2"
+        }
+      ]
+    }
+  ],
+  "switches": [
+    {
+      "id": "switch:leaf-1",
+      "name": "leaf-1",
+      "role": "leaf",
+      "shared": true,
+      "ports": [
+        {"id": "port:leaf-1:Ethernet1", "name": "Ethernet1", "intended_mtu": 9216, "peer": "iface:gpu-a:ens1f0"},
+        {"id": "port:leaf-1:Ethernet2", "name": "Ethernet2", "intended_mtu": 9216, "peer": "iface:gpu-b:ens1f0"},
+        {"id": "port:leaf-1:Ethernet7", "name": "Ethernet7", "intended_mtu": 9216, "peer": null}
+      ]
+    }
+  ],
+  "paths": [
+    {
+      "id": "path:gpu-a--gpu-b",
+      "endpoints": ["host:gpu-a", "host:gpu-b"],
+      "hops": [
+        "host:gpu-a",
+        "iface:gpu-a:ens1f0",
+        "port:leaf-1:Ethernet1",
+        "switch:leaf-1",
+        "port:leaf-1:Ethernet2",
+        "iface:gpu-b:ens1f0",
+        "host:gpu-b"
+      ],
+      "required_mtu": 9000,
+      "purpose": "RoCEv2 traffic between GPU hosts"
+    }
+  ]
+}

@@ -32,9 +32,15 @@ VITE_API_BASE_URL=http://127.0.0.1:8000
 The backend allows CORS from `localhost`/`127.0.0.1` on ports 3000, 5000, 5173 and 8000;
 add others with the `NBT_CORS_ORIGINS` environment variable.
 
+**Never put secrets in `VITE_*` variables** — Vite compiles them into the public JavaScript
+bundle. If the backend sets `NBT_API_KEY`, the UI shows a prompt and keeps the key in
+`sessionStorage` for the current tab only (sent as `X-API-Key`). That is a shared secret, not
+per-user authentication, and is readable by any script on the page origin.
+
 ## Structure
 
-- `src/pages/` - Overview, Events, Decisions, Incidents, Incident detail, AI Analysis, Remediation, Audit Trail
+- `src/pages/` - Overview, MTU demo (simulated), Events, Decisions, Incidents, Incident detail, AI Analysis, Remediation, Audit Trail
+- `src/components/EvidenceViews.tsx` - deterministic evidence, remediation preview/approval/post-check and audit timeline
 - `src/components/` - Sidebar, Topbar, Toast, action modals
 - `src/services/api.ts` - API client for the `/api/*` endpoints
 - `src/types/index.ts` - shared TypeScript types

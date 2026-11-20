@@ -1,0 +1,113 @@
+{
+  "scenario_id": "demo:mtu-two-host",
+  "title": "Two-host RoCE MTU mismatch (gpu-a <-> gpu-b via leaf-1)",
+  "simulated": true,
+  "disclaimer": "SIMULATED scenario. Telemetry, log lines, change records and post-remediation samples are scripted fixtures, not live measurements. Remediation runs in simulation mode and changes no infrastructure.",
+  "topology_id": "demo-mtu-two-host",
+  "scenario_clock": "2026-01-15T10:00:00+00:00",
+  "story": [
+    "09:30 A host reimage applies a default network profile to gpu-b ens1f0, setting MTU 1500 (intended 9000).",
+    "09:57 An unrelated description change is made on unused leaf-1 Ethernet7.",
+    "09:58:45 An RDMA job between gpu-a and gpu-b starts using 9000-byte frames.",
+    "10:00 gpu-b reports rapidly increasing receive errors and RDMA QP errors; triage runs."
+  ],
+  "changes": [
+    {
+      "change_id": "CHG-DEMO-001",
+      "ts": "2026-01-15T09:30:00+00:00",
+      "entity": "iface:gpu-b:ens1f0",
+      "attribute": "mtu",
+      "old_value": 9000,
+      "new_value": 1500,
+      "actor": "reimage-profile:base-ubuntu",
+      "summary": "Host reimage applied default network profile to gpu-b ens1f0"
+    },
+    {
+      "change_id": "CHG-DEMO-002",
+      "ts": "2026-01-15T09:57:00+00:00",
+      "entity": "port:leaf-1:Ethernet7",
+      "attribute": "description",
+      "old_value": "",
+      "new_value": "spare",
+      "actor": "netops:jdoe",
+      "summary": "Description updated on unused leaf-1 Ethernet7"
+    }
+  ],
+  "telemetry": [
+    {
+      "event_id": "evt-demo-mtu-gpu-b-0001",
+      "host": "gpu-b",
+      "ts": "2026-01-15T09:59:00+00:00",
+      "ifaces": {"ens1f0": {"rx_bytes": 81234567, "tx_bytes": 80123456, "errin": 2, "errout": 0, "mtu": 1500}},
+      "rdma": {"qp_errors": 0, "rq_errors": 0, "srq_errors": 0},
+      "dmesg_tail": "",
+      "role": "baseline"
+    },
+    {
+      "event_id": "evt-demo-mtu-gpu-a-0001",
+      "host": "gpu-a",
+      "ts": "2026-01-15T10:00:00+00:00",
+      "ifaces": {"ens1f0": {"rx_bytes": 90234567, "tx_bytes": 95123456, "errin": 0, "errout": 0, "mtu": 9000}},
+      "rdma": {"qp_errors": 0, "rq_errors": 0, "srq_errors": 0},
+      "dmesg_tail": "",
+      "role": "peer"
+    },
+    {
+      "event_id": "evt-demo-mtu-gpu-b-0002",
+      "host": "gpu-b",
+      "ts": "2026-01-15T10:00:00+00:00",
+      "ifaces": {"ens1f0": {"rx_bytes": 81934567, "tx_bytes": 80223456, "errin": 362, "errout": 0, "mtu": 1500}},
+      "rdma": {"qp_errors": 4, "rq_errors": 0, "srq_errors": 0},
+      "dmesg_tail": "[sim] mlx5_core 0000:3b:00.0 ens1f0: rx_length_errors incrementing: received frame length 9014 exceeds MTU 1500\n[sim] infiniband mlx5_0: QP 0x1a4 moved to error state (local length error)",
+      "role": "trigger"
+    }
+  ],
+  "post_checks": {
+    "pass": [
+      {
+        "event_id": "evt-demo-mtu-gpu-b-post-pass-1",
+        "host": "gpu-b",
+        "ts": "2026-01-15T10:02:00+00:00",
+        "ifaces": {"ens1f0": {"rx_bytes": 83934567, "tx_bytes": 82223456, "errin": 362, "errout": 0, "mtu": 9000}},
+        "rdma": {"qp_errors": 4, "rq_errors": 0, "srq_errors": 0},
+        "dmesg_tail": ""
+      },
+      {
+        "event_id": "evt-demo-mtu-gpu-b-post-pass-2",
+        "host": "gpu-b",
+        "ts": "2026-01-15T10:03:00+00:00",
+        "ifaces": {"ens1f0": {"rx_bytes": 85934567, "tx_bytes": 84223456, "errin": 362, "errout": 0, "mtu": 9000}},
+        "rdma": {"qp_errors": 4, "rq_errors": 0, "srq_errors": 0},
+        "dmesg_tail": ""
+      }
+    ],
+    "fail": [
+      {
+        "event_id": "evt-demo-mtu-gpu-b-post-fail-1",
+        "host": "gpu-b",
+        "ts": "2026-01-15T10:02:00+00:00",
+        "ifaces": {"ens1f0": {"rx_bytes": 83934567, "tx_bytes": 82223456, "errin": 380, "errout": 0, "mtu": 9000}},
+        "rdma": {"qp_errors": 5, "rq_errors": 0, "srq_errors": 0},
+        "dmesg_tail": ""
+      },
+      {
+        "event_id": "evt-demo-mtu-gpu-b-post-fail-2",
+        "host": "gpu-b",
+        "ts": "2026-01-15T10:03:00+00:00",
+        "ifaces": {"ens1f0": {"rx_bytes": 85934567, "tx_bytes": 84223456, "errin": 455, "errout": 0, "mtu": 9000}},
+        "rdma": {"qp_errors": 7, "rq_errors": 0, "srq_errors": 0},
+        "dmesg_tail": "[sim] infiniband mlx5_0: QP 0x1b2 moved to error state (local length error)"
+      }
+    ],
+    "inconclusive": [
+      {
+        "event_id": "evt-demo-mtu-gpu-b-post-inc-1",
+        "host": "gpu-b",
+        "ts": "2026-01-15T10:02:00+00:00",
+        "ifaces": {"ens1f0": {"rx_bytes": 83934567, "tx_bytes": 82223456, "errin": 362, "errout": 0, "mtu": 9000}},
+        "rdma": {"qp_errors": 4, "rq_errors": 0, "srq_errors": 0},
+        "dmesg_tail": ""
+      }
+    ]
+  }
+}

@@ -45,7 +45,7 @@
     - name: Remove driver module
       shell: |
         set -e
-        modprobe -r {{ item.driver }}
+        modprobe -r {{ item.driver | quote }}
       loop: "{{ host_targets | default([]) }}"
       register: rmmod_out
       failed_when: false
@@ -54,7 +54,7 @@
     - name: Re-insert driver module
       shell: |
         set -e
-        modprobe {{ item.driver }}
+        modprobe {{ item.driver | quote }}
       loop: "{{ host_targets | default([]) }}"
       register: modprobe_out
       failed_when: false

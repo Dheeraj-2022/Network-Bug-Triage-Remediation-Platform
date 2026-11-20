@@ -31,7 +31,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 
-from api.routes import router as api_router
+from api.routes import public_router, router as api_router
 
 # ---------------------------------------------------------------------------
 # App Initialization & Metadata
@@ -78,6 +78,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 # Mount Routers
 # ---------------------------------------------------------------------------
+app.include_router(public_router, prefix="/api")
 app.include_router(api_router, prefix="/api")
 
 # ---------------------------------------------------------------------------
@@ -116,5 +117,9 @@ if __name__ == "__main__":
     print(f"  Alternative Docs (ReDoc)   : http://{host}:{port}/redoc")
     print(f"  Live Web Dashboard         : http://{host}:{port}/")
     print("=" * 64)
+    if host not in ("127.0.0.1", "localhost", "::1") and not os.environ.get("NBT_API_KEY"):
+        print("  WARNING: bound to a non-loopback address with NBT_API_KEY unset;")
+        print("  the API (including remediation approval) is unauthenticated.")
+        print("=" * 64)
 
     uvicorn.run("main:app", host=host, port=port, reload=True)

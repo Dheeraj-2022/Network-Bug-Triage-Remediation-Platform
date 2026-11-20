@@ -9,8 +9,11 @@ Defines request and response data contracts for:
 - ML model training & state reset
 """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field
+
+HOST_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9._-]{0,252}$"
+APPROVER_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9 ._@-]{0,63}$"
 
 
 # ---------------------------------------------------------------------------
@@ -34,12 +37,12 @@ class StatusResponse(BaseModel):
 # Telemetry Event Schemas
 # ---------------------------------------------------------------------------
 class ProcessEventRequest(BaseModel):
-    event_id: Optional[str] = None
-    host: Optional[str] = "custom-host"
-    ts: Optional[str] = None
+    event_id: Optional[str] = Field(default=None, max_length=128)
+    host: Optional[str] = Field(default="custom-host", pattern=HOST_PATTERN)
+    ts: Optional[str] = Field(default=None, max_length=64)
     ifaces: Optional[Dict[str, Any]] = Field(default_factory=dict)
     rdma: Optional[Dict[str, Any]] = Field(default_factory=dict)
-    dmesg_tail: Optional[str] = ""
+    dmesg_tail: Optional[str] = Field(default="", max_length=20000)
     sample_packets: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
 
     model_config = ConfigDict(extra="allow")
@@ -77,6 +80,11 @@ class DecisionResponse(BaseModel):
     remediate: bool = False
     playbook: Optional[str] = None
     ai: Optional[Union[AIDecisionSummary, Dict[str, Any]]] = None
+    simulated: bool = False
+    scenario_id: Optional[str] = None
+    remediation_id: Optional[str] = None
+    remediation: Optional[Dict[str, Any]] = None
+    evidence: Optional[Dict[str, Any]] = None
 
     model_config = ConfigDict(extra="allow")
 
@@ -101,6 +109,9 @@ class AuditLogEntry(BaseModel):
     playbook: Optional[str] = None
     reason: Optional[str] = None
     status: Optional[str] = None
+    remediation_id: Optional[str] = None
+    mode: Optional[str] = None
+    scenario_id: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
@@ -131,18 +142,38 @@ class AIIncidentSummary(BaseModel):
     status: Optional[str] = None
     requires_human_approval: Optional[bool] = None
     context_sources: Optional[List[Any]] = Field(default_factory=list)
+    remediation_id: Optional[str] = None
+    simulated: bool = False
 
 
 class AIApproveRequest(BaseModel):
-    incident_id: str
+    incident_id: str = Field(max_length=200)
     approved: bool = True
+    approver: str = Field(default="api-user", pattern=APPROVER_PATTERN)
+    preview_digest: Optional[str] = Field(default=None, max_length=64)
 
 
 class AIApproveResponse(BaseModel):
     ok: bool
     status: str
     incident_id: str
+    remediation_id: Optional[str] = None
     validation: Optional[Dict[str, Any]] = None
+
+
+# ---------------------------------------------------------------------------
+# Shared remediation policy & demo
+# ---------------------------------------------------------------------------
+class RemediationDecisionRequest(BaseModel):
+    approved: bool
+    approver: str = Field(pattern=APPROVER_PATTERN, description="Name of the person deciding (self-asserted)")
+    preview_digest: Optional[str] = Field(default=None, max_length=64,
+                                          description="Digest of the preview that was reviewed")
+    reason: Optional[str] = Field(default=None, max_length=500)
+
+
+class DemoRunRequest(BaseModel):
+    post_check: Literal["pass", "fail", "inconclusive"] = "pass"
 
 
 # ---------------------------------------------------------------------------

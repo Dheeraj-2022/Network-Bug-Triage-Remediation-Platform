@@ -35,9 +35,9 @@
 
     - name: Back up current MTU for each interface
       shell: |
-        mkdir -p {{ backup_dir }}
-        for ifname in {{ host_targets | map(attribute='iface') | list | join(' ') }}; do
-          ip -o link show ${ifname} | awk '{print $5}' > {{ backup_dir }}/{{ inventory_hostname }}-${ifname}.mtu || true
+        mkdir -p {{ backup_dir | quote }}
+        for ifname in {{ host_targets | map(attribute='iface') | map('quote') | list | join(' ') }}; do
+          ip -o link show "${ifname}" | awk '{print $5}' > {{ backup_dir | quote }}/{{ inventory_hostname | quote }}-"${ifname}".mtu || true
         done
       when: host_targets is defined and host_targets | length > 0
       ignore_errors: true
@@ -45,14 +45,14 @@
     - name: Apply desired MTU (canary strategy)
       shell: |
         set -e
-        ip link set dev {{ item.iface }} mtu {{ desired_mtu }}
-        ip -o link show {{ item.iface }}
+        ip link set dev {{ item.iface | quote }} mtu {{ desired_mtu | int }}
+        ip -o link show {{ item.iface | quote }}
       loop: "{{ host_targets | default([]) }}"
       register: mtu_apply
       failed_when: false
 
     - name: Verify MTU applied
-      shell: ip -o link show {{ item.item.iface }} | awk '{print $5}'
+      shell: ip -o link show {{ item.item.iface | quote }} | awk '{print $5}'
       loop: "{{ mtu_apply.results | default([]) }}"
       register: mtu_verify
       changed_when: false
@@ -63,11 +63,11 @@
         msg: "MTU change failed on canary host {{ inventory_hostname }} iface {{ item.item.iface }}"
       when:
         - inventory_hostname == (remediation_targets[0].host if remediation_targets|length > 0 else '')
-        - item.stdout | int != desired_mtu
+        - item.stdout | int != desired_mtu | int
       loop: "{{ mtu_verify.results }}"
 
     - name: Log remediation action
       shell: |
-        echo "$(date -Is) Remediated MTU={{ desired_mtu }} for iface={{ item.item.iface }} on host={{ inventory_hostname }} reason='{{ reason | default(\"auto\") }}'" >> /var/log/network-bug-triage-remediation.log
+        echo "$(date -Is) Remediated MTU={{ desired_mtu | int }} for iface={{ item.item.iface | quote }} on host={{ inventory_hostname | quote }}" >> /var/log/network-bug-triage-remediation.log
       loop: "{{ mtu_verify.results }}"
       ignore_errors: true

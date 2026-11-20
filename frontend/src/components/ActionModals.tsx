@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Modal } from './ui';
 import { Incident } from '../lib/incidents';
+import { useApprover } from '../hooks/useApprover';
 
 export const ClearConfirmModal: React.FC<{
   isOpen: boolean;
@@ -24,10 +25,13 @@ export const ClearConfirmModal: React.FC<{
     }
   >
     <p>
-      Removes all in-memory telemetry events, triage decisions, remediation audit entries and AI incidents from the
+      Removes all in-memory telemetry events, triage decisions, execution-log entries and AI incidents from the
       controller.
     </p>
-    <p className="muted">This cannot be undone. The trained model on disk is not affected.</p>
+    <p className="muted">
+      This cannot be undone. The trained model on disk and the persisted remediation proposals and their audit trail
+      are not affected.
+    </p>
   </Modal>
 );
 
@@ -90,48 +94,73 @@ export const InjectModal: React.FC<{
   );
 };
 
+export const ApproverField: React.FC<{ value: string; onChange: (v: string) => void; valid: boolean; id: string }> = ({
+  value,
+  onChange,
+  valid,
+  id,
+}) => (
+  <div className="field">
+    <label className="field-label" htmlFor={id}>
+      Your name (recorded in the audit trail)
+    </label>
+    <input id={id} className="input" value={value} maxLength={64} onChange={(e) => onChange(e.target.value)} style={{ width: 240 }} />
+    <span className="field-help">
+      {value && !valid ? 'Letters, digits, space and . _ @ - only.' : 'Self-asserted; not verified by the API.'}
+    </span>
+  </div>
+);
+
 export const ApprovalModal: React.FC<{
   incident: Incident | null;
   approve: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (approver: string) => void;
   isLoading: boolean;
-}> = ({ incident, approve, onClose, onConfirm, isLoading }) => (
-  <Modal
-    open={!!incident}
-    onClose={onClose}
-    title={approve ? 'Approve remediation' : 'Reject remediation'}
-    footer={
-      <>
-        <button className="btn" onClick={onClose}>
-          Cancel
-        </button>
-        <button className={approve ? 'btn btn-primary' : 'btn btn-danger-solid'} onClick={onConfirm} disabled={isLoading}>
-          {isLoading ? 'Submitting…' : approve ? 'Approve plan' : 'Reject plan'}
-        </button>
-      </>
-    }
-  >
-    {incident && (
-      <>
-        <dl className="kv">
-          <dt>Incident</dt>
-          <dd className="mono">{incident.key}</dd>
-          <dt>Host</dt>
-          <dd className="mono">{incident.host}</dd>
-          <dt>Fault</dt>
-          <dd>{incident.title}</dd>
-          <dt>Playbook</dt>
-          <dd className="mono">{incident.playbook || '—'}</dd>
-          <dt>Risk</dt>
-          <dd>{incident.risk || '—'}</dd>
-        </dl>
-        <p className="muted">
-          {approve
-            ? 'Approval is recorded and the orchestrator resumes the workflow: the validation agent checks the outcome and the audit agent records the incident.'
-            : 'The plan will be marked as rejected. No playbook will run.'}
-        </p>
-      </>
-    )}
-  </Modal>
-);
+}> = ({ incident, approve, onClose, onConfirm, isLoading }) => {
+  const [approver, setApprover, valid] = useApprover();
+  return (
+    <Modal
+      open={!!incident}
+      onClose={onClose}
+      title={approve ? 'Approve remediation' : 'Reject remediation'}
+      footer={
+        <>
+          <button className="btn" onClick={onClose}>
+            Cancel
+          </button>
+          <button
+            className={approve ? 'btn btn-primary' : 'btn btn-danger-solid'}
+            onClick={() => onConfirm(approver)}
+            disabled={isLoading || !valid}
+          >
+            {isLoading ? 'Submitting…' : approve ? 'Approve plan' : 'Reject plan'}
+          </button>
+        </>
+      }
+    >
+      {incident && (
+        <>
+          <dl className="kv">
+            <dt>Incident</dt>
+            <dd className="mono">{incident.key}</dd>
+            <dt>Host</dt>
+            <dd className="mono">{incident.host}</dd>
+            <dt>Fault</dt>
+            <dd>{incident.title}</dd>
+            <dt>Playbook</dt>
+            <dd className="mono">{incident.playbook || '—'}</dd>
+            <dt>Risk</dt>
+            <dd>{incident.risk || '—'}</dd>
+          </dl>
+          <ApproverField id="approval-approver" value={approver} onChange={setApprover} valid={valid} />
+          <p className="muted">
+            {approve
+              ? 'The shared remediation policy records your approval, runs the previewed action in its bound mode (simulation unless the operator configured real execution) and then runs a deterministic post-check. Only a passing post-check marks the incident resolved.'
+              : 'The plan will be marked as rejected. No playbook will run.'}
+          </p>
+        </>
+      )}
+    </Modal>
+  );
+};

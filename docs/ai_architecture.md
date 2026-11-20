@@ -361,11 +361,22 @@ dashboard) is **unchanged**; the AI layer augments it.
 
 ## Human-approval gate
 
-When `require_human_approval` is set (default), the Remediation Agent emits a
-plan with `status = pending_approval` and the orchestrator **pauses before
-execution**. The Flask endpoint `POST /api/ai/approve` resumes the workflow
-(validation + audit) once a human approves. Kernel panics and unknown domains
-are never auto-remediated regardless of confidence.
+The AI layer does not execute anything. Its remediation plan is only a
+*candidate* submitted to the shared remediation policy
+(`controller/remediation/`), alongside the rules and ML candidates. The policy
+validates the action against an allowlist, resolves targets in the topology
+registry, builds the playbook variables itself (LLM-supplied `extra_vars` are
+ignored) and stores a preview with `status = pending_approval`.
+
+`POST /api/ai/approve` (FastAPI) and `POST /api/remediations/{id}/decision`
+both record the decision through that policy. Approval executes in the mode
+bound at preview time (simulation by default) and then runs a deterministic
+post-check; the AI incident's `validation` is overwritten with that post-check
+(`authoritative: deterministic_post_check`), and any model assessment is kept
+under `validation.model_assessment`. The legacy Flask app refuses approvals
+because it is outside the policy boundary. Kernel panics and unknown domains
+are never auto-remediated regardless of confidence. Simulated (demo) incidents
+are not written to persistent incident memory.
 
 ## Enabling Vertex AI Gemini
 

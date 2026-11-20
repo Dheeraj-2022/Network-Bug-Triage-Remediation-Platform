@@ -32,3 +32,20 @@ Defaults live in `infra/group_vars/all.yml`:
 
 ## Logs
 - Ansible logs to `logs/ansible.log` (from `ansible.cfg`).
+
+## Remediation playbooks and the safety boundary
+The remediation playbooks in `infra/playbooks/` are only ever invoked by
+`controller/remediation/executors.py`, after a proposal has been previewed and
+approved through the shared remediation policy. The processor never calls them
+directly.
+
+- Real execution requires the proposal to have been previewed in
+  `NBT_REMEDIATION_MODE=ansible` mode (or `processor.py --execute`) **and** the
+  approving process to run in the same mode. Default mode is `simulate`.
+- In `ansible` mode, target hosts must also appear (uncommented) in the
+  `[agents]` group of `infra/inventory.ini`.
+- Variables are constructed by the policy from validated values (interface names,
+  integer MTU in 1280–9216, allowlisted driver modules); free text is never passed.
+  The playbooks additionally `quote` interpolated shell arguments.
+- Failures are recorded; no automatic retry or rollback playbook is run.
+- Keep `controller_args: --dry-run` unless you intend real changes on an isolated testbed.

@@ -4,10 +4,11 @@ Exposes all /api/* endpoints matching the existing platform contracts.
 """
 
 import asyncio
-from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated, Any, Dict, List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from fastapi.responses import JSONResponse
 
+from api.auth import api_key_required, require_api_key
 from api.service import service
 from schemas import (
     AIApproveRequest,
@@ -16,15 +17,32 @@ from schemas import (
     AuditLogEntry,
     ClearResponse,
     DecisionResponse,
+    DemoRunRequest,
     InjectRequest,
     InjectResponse,
     LoadSampleEventsResponse,
     ProcessEventRequest,
+    RemediationDecisionRequest,
     StatusResponse,
     TrainResponse,
 )
 
-router = APIRouter(tags=["Triage API"])
+router = APIRouter(tags=["Triage API"], dependencies=[Depends(require_api_key)])
+public_router = APIRouter(tags=["Auth"])
+
+ProposalId = Annotated[str, Path(pattern=r"^rem-[0-9a-f]{12}$")]
+
+
+@public_router.get("/auth", summary="Report whether an API key is required")
+async def auth_info():
+    """Public: tells the UI whether to ask the operator for an API key. Never returns the key."""
+    return {
+        "api_key_required": api_key_required(),
+        "remediation_mode": service.policy.mode,
+        "note": ("X-API-Key is a shared secret, not per-user auth. Approver names are self-asserted."
+                 if api_key_required() else
+                 "No API key configured: the API is unauthenticated. Keep it bound to localhost."),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -60,7 +78,7 @@ async def inject_events(payload: Optional[InjectRequest] = None):
 async def process_single_event(payload: ProcessEventRequest):
     """Run the triage and remediation pipeline on a single custom telemetry event."""
     event_dict = payload.model_dump()
-    result = await asyncio.to_thread(service.process_single, event_dict)
+    result = await asyncio.to_thread(service.process_single, event_dict, True)
     return result
 
 
@@ -121,10 +139,84 @@ async def approve_ai_incident(payload: AIApproveRequest):
     Approve or reject a remediation plan proposed by the AI multi-agent orchestrator.
     If approved, optionally resumes execution and validation.
     """
-    data, code = await asyncio.to_thread(service.approve_ai_incident, payload.incident_id, payload.approved)
+    data, code = await asyncio.to_thread(
+        service.approve_ai_incident, payload.incident_id, payload.approved, payload.approver, payload.preview_digest
+    )
     if code != 200:
         return JSONResponse(status_code=code, content=data)
     return data
+
+
+# ---------------------------------------------------------------------------
+# Shared remediation policy (every remediation path goes through these)
+# ---------------------------------------------------------------------------
+@router.get("/remediations", summary="List remediation proposals")
+async def list_remediations(limit: int = 50, scenario_id: Optional[str] = None):
+    return await asyncio.to_thread(service.list_remediations, limit, scenario_id)
+
+
+@router.get("/remediations/audit", summary="Persistent remediation audit trail")
+async def remediation_audit(limit: int = 100, scenario_id: Optional[str] = None):
+    return await asyncio.to_thread(service.get_remediation_audit, limit, scenario_id)
+
+
+@router.get("/remediations/{proposal_id}", summary="Get one proposal with preview, decision, execution, post-check")
+async def get_remediation(proposal_id: ProposalId):
+    p = await asyncio.to_thread(service.get_remediation, proposal_id)
+    if p is None:
+        return JSONResponse(status_code=404, content={"error": "proposal not found"})
+    return p
+
+
+@router.post("/remediations/{proposal_id}/decision", summary="Approve or reject a previewed remediation")
+async def decide_remediation(proposal_id: ProposalId, payload: RemediationDecisionRequest):
+    """Approval executes in the mode bound at preview time (simulate by default), then runs the post-check.
+    Duplicate, stale or changed-preview decisions return 409."""
+    data, code = await asyncio.to_thread(
+        service.decide_remediation, proposal_id, payload.approved, payload.approver,
+        payload.preview_digest, payload.reason)
+    if code != 200:
+        return JSONResponse(status_code=code, content=data)
+    return data
+
+
+@router.post("/remediations/{proposal_id}/verify", summary="Re-run the post-check with available telemetry")
+async def verify_remediation(proposal_id: ProposalId):
+    data, code = await asyncio.to_thread(service.verify_remediation, proposal_id)
+    if code != 200:
+        return JSONResponse(status_code=code, content=data)
+    return data
+
+
+# ---------------------------------------------------------------------------
+# Deterministic demo & topology
+# ---------------------------------------------------------------------------
+@router.get("/demo/mtu-two-host", summary="Current state of the two-host MTU demo (SIMULATED)")
+async def get_demo():
+    return await asyncio.to_thread(service.get_demo)
+
+
+@router.post("/demo/mtu-two-host/load", summary="Reset and replay the two-host MTU demo (SIMULATED)")
+async def load_demo(payload: Optional[DemoRunRequest] = None):
+    """Removes only demo-scoped records, then replays the fixture through the real triage pipeline."""
+    req = payload or DemoRunRequest()
+    data, code = await asyncio.to_thread(service.run_demo, req.post_check)
+    if code != 200:
+        return JSONResponse(status_code=code, content=data)
+    return data
+
+
+@router.post("/demo/mtu-two-host/reset", summary="Remove only the demo's records")
+async def reset_demo():
+    return await asyncio.to_thread(service.reset_demo)
+
+
+@router.get("/topology/{topology_id}", summary="Topology nodes, links and paths")
+async def get_topology(topology_id: Annotated[str, Path(pattern=r"^[A-Za-z0-9_.-]{1,64}$")]):
+    view = service.policy.registry.view(topology_id)
+    if view is None:
+        return JSONResponse(status_code=404, content={"error": "topology not found"})
+    return view
 
 
 # ---------------------------------------------------------------------------

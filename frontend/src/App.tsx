@@ -7,16 +7,17 @@ import { Banner } from './components/ui';
 import { AiAnalysisPage } from './pages/AiAnalysisPage';
 import { AuditTrailPage } from './pages/AuditTrailPage';
 import { DecisionsPage } from './pages/DecisionsPage';
+import { DemoPage } from './pages/DemoPage';
 import { EventsPage } from './pages/EventsPage';
 import { IncidentDetailPage } from './pages/IncidentDetailPage';
 import { IncidentsPage } from './pages/IncidentsPage';
 import { OverviewPage } from './pages/OverviewPage';
 import { RemediationPage } from './pages/RemediationPage';
 import { Navigate } from './pages/common';
-import { api, API_BASE_URL } from './services/api';
+import { api, apiKey, ApiError, API_BASE_URL } from './services/api';
 import { buildHostHealth, buildIncidents, Incident, STATE_META } from './lib/incidents';
 import { hrefFor, parseHash, Route } from './lib/routes';
-import { AIIncident, AIStatus, AuditEntry, Decision, SystemStatus, TelemetryEvent } from './types';
+import { AIIncident, AIStatus, AuditEntry, AuthInfo, Decision, SystemStatus, TelemetryEvent } from './types';
 
 // Hash routing keeps deep links and back/forward without a router dependency.
 const FETCH_LIMIT = 200;
@@ -30,6 +31,9 @@ export const App: React.FC = () => {
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
   const [aiStatus, setAiStatus] = useState<AIStatus | null>(null);
   const [aiIncidents, setAiIncidents] = useState<AIIncident[]>([]);
+  const [auth, setAuth] = useState<AuthInfo | null>(null);
+  const [needsKey, setNeedsKey] = useState(false);
+  const [keyDraft, setKeyDraft] = useState('');
 
   const [connection, setConnection] = useState<'connecting' | 'online' | 'offline'>('connecting');
   const [loaded, setLoaded] = useState(false);
@@ -89,7 +93,9 @@ export const App: React.FC = () => {
     if (aud.status === 'fulfilled') setAuditLog(aud.value);
     if (aiS.status === 'fulfilled') setAiStatus(aiS.value);
     if (aiIncs.status === 'fulfilled') setAiIncidents(aiIncs.value);
-    setConnection(s.status === 'fulfilled' ? 'online' : 'offline');
+    const unauthorized = s.status === 'rejected' && s.reason instanceof ApiError && s.reason.status === 401;
+    setNeedsKey(unauthorized);
+    setConnection(s.status === 'fulfilled' || unauthorized ? 'online' : 'offline');
     if (s.status === 'fulfilled') setLastUpdated(Date.now());
     setLoaded(true);
     setIsRefreshing(false);
@@ -97,7 +103,14 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     refreshAll();
+    api.getAuth().then(setAuth).catch(() => setAuth(null));
   }, [refreshAll]);
+
+  const saveKey = () => {
+    apiKey.set(keyDraft.trim());
+    setKeyDraft('');
+    refreshAll();
+  };
 
   useEffect(() => {
     if (!isLive) return;
@@ -173,16 +186,19 @@ export const App: React.FC = () => {
 
   const requestApproval = (incident: Incident, approve: boolean) => setApproval({ incident, approve });
 
-  const confirmApproval = async () => {
-    if (!approval?.incident.aiId) return;
+  const confirmApproval = async (approver: string) => {
+    if (!approval) return;
     const { incident, approve } = approval;
+    if (!incident.remediationId && !incident.aiId) return;
     setIsApproving(true);
     try {
-      const res = await api.approveAiIncident(incident.aiId!, approve);
+      const status = incident.remediationId
+        ? (await api.decideRemediation(incident.remediationId, { approved: approve, approver })).status
+        : (await api.approveAiIncident(incident.aiId!, approve, approver)).status;
       addToast(
-        approve ? 'success' : 'info',
-        approve ? 'Remediation approved' : 'Remediation rejected',
-        `${incident.title} — status: ${res.status}.`,
+        approve ? (status === 'resolved' ? 'success' : 'info') : 'info',
+        approve ? 'Approval recorded' : 'Remediation rejected',
+        `${incident.title} — status: ${status.replace(/_/g, ' ')}.`,
       );
       setApproval(null);
       await refreshAll();
@@ -216,6 +232,9 @@ export const App: React.FC = () => {
         />
       );
       break;
+    case 'demo':
+      page = <DemoPage {...common} onChanged={refreshAll} onToast={addToast} />;
+      break;
     case 'incidents':
       page = <IncidentsPage {...common} key={route.query.toString()} incidents={incidents} query={route.query} />;
       break;
@@ -230,6 +249,7 @@ export const App: React.FC = () => {
           auditLog={auditLog}
           aiStatus={aiStatus}
           onRequestApproval={requestApproval}
+          onChanged={refreshAll}
         />
       );
       break;
@@ -240,6 +260,7 @@ export const App: React.FC = () => {
           incidents={incidents}
           aiStatus={aiStatus}
           auditLog={auditLog}
+          remediationMode={auth?.remediation_mode}
           onRequestApproval={requestApproval}
         />
       );
@@ -312,6 +333,42 @@ export const App: React.FC = () => {
                 Requests to <span className="mono">{API_BASE_URL}</span> are failing. Start the API with{' '}
                 <span className="mono">python main.py</span> or set <span className="mono">VITE_API_BASE_URL</span>.
                 {lastUpdated ? ' Data shown below is from the last successful refresh.' : ''}
+              </Banner>
+            )}
+            {needsKey && (
+              <Banner
+                tone="warn"
+                title="This API requires an API key"
+                actions={
+                  <form
+                    className="row"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      saveKey();
+                    }}
+                  >
+                    <input
+                      className="input"
+                      type="password"
+                      autoComplete="off"
+                      aria-label="API key"
+                      value={keyDraft}
+                      onChange={(e) => setKeyDraft(e.target.value)}
+                      placeholder="X-API-Key"
+                    />
+                    <button className="btn btn-sm btn-primary" type="submit" disabled={!keyDraft.trim()}>
+                      Use key
+                    </button>
+                  </form>
+                }
+              >
+                The server has <span className="mono">NBT_API_KEY</span> set. The key is kept in this tab's session storage only;
+                it is never built into the frontend bundle.
+              </Banner>
+            )}
+            {auth && !auth.api_key_required && (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') && (
+              <Banner tone="warn" title="API is unauthenticated">
+                {auth.note}
               </Banner>
             )}
             {page}

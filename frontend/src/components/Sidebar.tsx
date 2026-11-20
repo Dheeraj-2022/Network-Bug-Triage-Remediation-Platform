@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, AlertOctagon, Cpu, GitBranch, LayoutDashboard, ScrollText, Waypoints, Wrench } from 'lucide-react';
+import { Activity, AlertOctagon, Cpu, FlaskConical, GitBranch, LayoutDashboard, ScrollText, Waypoints, Wrench } from 'lucide-react';
 import { PageId } from '../types';
 import { API_BASE_URL } from '../services/api';
 
@@ -28,6 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, count
       label: 'Operations',
       items: [
         { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={16} /> },
+        { id: 'demo', label: 'MTU demo (simulated)', icon: <FlaskConical size={16} /> },
         { id: 'incidents', label: 'Incidents', icon: <AlertOctagon size={16} />, count: counts.openIncidents },
         {
           id: 'remediation',

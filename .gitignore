@@ -10,8 +10,9 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Anchored so frontend/src/lib/ is not ignored
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -73,6 +74,17 @@ logs/
 
 # Data (keep sample, ignore generated)
 data/agent-queue.jsonl
+
+# Large external datasets (download separately; see README "Datasets")
+data/DeepOran/*.parquet
+data/DeepOran/*.tar.zst
+data/BGL/*.log
+data/HPC/*.log
+data/Linux/*.log
+data/OpenStack/*.log
+
+# Playwright MCP screenshots/snapshots
+.playwright-mcp/
 
 # AI layer runtime state (written by controller/ai/memory.py)
 controller/ai/store/*.json
