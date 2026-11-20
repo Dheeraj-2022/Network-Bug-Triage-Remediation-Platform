@@ -1,0 +1,16 @@
+# Normalise line endings: files executed or parsed on Linux must stay LF even on Windows checkouts.
+* text=auto
+
+*.sh        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.cfg       text eol=lf
+*.ini       text eol=lf
+*.service   text eol=lf
+*.j2        text eol=lf
+*.py        text eol=lf
+Vagrantfile text eol=lf
+
+*.joblib    binary
+*.png       binary
+*.whl       binary

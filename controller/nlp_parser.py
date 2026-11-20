@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+"""
+NLP Log Parser
+--------------
+
+Uses transformer embeddings to analyze kernel/driver logs (dmesg).
+Generates vector embeddings and optional classification.
+
+Dependencies:
+- sentence-transformers (optional; falls back to zero-vector if missing)
+"""
+
+from typing import List, Dict
+import logging
+import os
+import numpy as np
+
+try:
+    from sentence_transformers import SentenceTransformer  # type: ignore
+except Exception:
+    SentenceTransformer = None
+
+LOG = logging.getLogger(__name__)
+
+
+class LogParser:
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2"):
+        self.model = None
+        self.embedding_dim = 384  # default dim for MiniLM; overridden if model loads
+        # NBT_DISABLE_EMBEDDINGS=1 skips model loading (fast, offline, deterministic tests).
+        if SentenceTransformer and os.environ.get("NBT_DISABLE_EMBEDDINGS", "").lower() not in ("1", "true", "yes"):
+            try:
+                self.model = SentenceTransformer(model_name)
+                # Use the newer method name if available, fall back to legacy
+                if hasattr(self.model, "get_embedding_dimension"):
+                    self.embedding_dim = self.model.get_embedding_dimension()
+                elif hasattr(self.model, "get_sentence_embedding_dimension"):
+                    self.embedding_dim = self.model.get_sentence_embedding_dimension()
+            except Exception:
+                LOG.warning("Could not load SentenceTransformer model '%s'; continuing with zero-vector embeddings", model_name)
+
+    def embed_logs(self, logs: str) -> np.ndarray:
+        """Convert multi-line logs into a single embedding vector."""
+        lines = [line for line in logs.splitlines() if line.strip()]
+        if not lines or self.model is None:
+            return np.zeros(self.embedding_dim, dtype=float)
+        embeddings = self.model.encode(lines)
+        return np.mean(embeddings, axis=0)
+
+    def classify_logs(self, logs: str) -> str:
+        """
+        Stub for log classification.
+        Future: fine-tune classifier on labeled dmesg data.
+        """
+        if "mtu" in logs.lower():
+            return "MTU_MISMATCH"
+        if "rdma" in logs.lower() or "qp" in logs.lower():
+            return "RDMA_ERROR"
+        if "driver" in logs.lower() or "oops" in logs.lower():
+            return "DRIVER_FAULT"
+        return "UNKNOWN"
+
+
+# Quick self-test
+if __name__ == "__main__":
+    parser = LogParser()
+    test_logs = "mlx5_core 0000:03:00.0: firmware bug detected\neth0: MTU mismatch detected"
+    print(parser.classify_logs(test_logs))
+    print(parser.embed_logs(test_logs)[:5])

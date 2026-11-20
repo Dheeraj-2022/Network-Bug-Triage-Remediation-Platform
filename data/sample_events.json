@@ -1,0 +1,107 @@
+[
+  {
+    "event_id": "synthetic-file-vm-1-1793075832-6304",
+    "host": "file-vm-1",
+    "ts": "2026-10-27T04:37:12.035956+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 915812,
+        "tx_bytes": 943210,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1400
+      },
+      "eth1": {
+        "rx_bytes": 147117,
+        "tx_bytes": 455259,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ]
+  },
+  {
+    "event_id": "synthetic-file-vm-2-1793075832-9391",
+    "host": "file-vm-2",
+    "ts": "2026-10-27T04:37:12.035956+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 821105,
+        "tx_bytes": 134780,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      },
+      "eth1": {
+        "rx_bytes": 601422,
+        "tx_bytes": 928429,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "Normal boot messages",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ]
+  },
+  {
+    "event_id": "synthetic-file-vm-3-1793075832-64",
+    "host": "file-vm-3",
+    "ts": "2026-10-27T04:37:12.035956+00:00",
+    "ifaces": {
+      "eth0": {
+        "rx_bytes": 593819,
+        "tx_bytes": 466129,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 9000
+      },
+      "eth1": {
+        "rx_bytes": 415188,
+        "tx_bytes": 258218,
+        "errin": 0,
+        "errout": 0,
+        "mtu": 1500
+      }
+    },
+    "rdma": {
+      "qp_errors": 0,
+      "rq_errors": 0,
+      "srq_errors": 0
+    },
+    "dmesg_tail": "eth0: MTU mismatch detected",
+    "sample_packets": [
+      {
+        "src": "10.0.0.1",
+        "dst": "10.0.0.2",
+        "len": 128,
+        "proto": "TCP"
+      }
+    ]
+  }
+]

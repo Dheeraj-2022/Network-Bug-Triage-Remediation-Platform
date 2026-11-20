@@ -1,0 +1,337 @@
+{
+  "fields": [
+    {
+      "arrow_type": "string",
+      "name": "observation_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "run_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "scenario_run_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "scenario_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "timestamp[us, tz=UTC]",
+      "name": "timestamp_utc",
+      "nullable": true
+    },
+    {
+      "arrow_type": "timestamp[us, tz=UTC]",
+      "name": "source_timestamp_utc",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "source_monotonic_ns",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "gnb_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "ue_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int32",
+      "name": "slice_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "slice_type",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "ue_interface",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "data_source",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "collector_version",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "git_commit",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "oai_commit",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "exporter_boot_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "exporter_sequence",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "gnb_pid",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "ue_pid",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "rx_bytes_total",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "tx_bytes_total",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "rx_packets_total",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "tx_packets_total",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "rx_dropped_total",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "tx_dropped_total",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "rx_mbps",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "tx_mbps",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "packet_loss_ratio",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "rtt_avg_ms",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "rtt_p95_ms",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "jitter_ms",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "iperf_mbps",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "traffic_loss_ratio",
+      "nullable": true
+    },
+    {
+      "arrow_type": "timestamp[us, tz=UTC]",
+      "name": "traffic_source_timestamp_utc",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "rnti",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "cu_ue_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "bool",
+      "name": "in_sync",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "rsrp_dbm",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "dl_bler",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "ul_bler",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "dl_mcs",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "ul_mcs",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "ul_nprb",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "mac_tx_bytes_total",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "mac_rx_bytes_total",
+      "nullable": true
+    },
+    {
+      "arrow_type": "timestamp[us, tz=UTC]",
+      "name": "mac_source_timestamp_utc",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "prb_utilization",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "throughput_mbps",
+      "nullable": true
+    },
+    {
+      "arrow_type": "double",
+      "name": "latency_ms",
+      "nullable": true
+    },
+    {
+      "arrow_type": "bool",
+      "name": "sla_violation",
+      "nullable": true
+    },
+    {
+      "arrow_type": "bool",
+      "name": "fault_active",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "fault_type",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "control_epoch",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "control_action_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "bool",
+      "name": "control_acknowledged",
+      "nullable": true
+    },
+    {
+      "arrow_type": "bool",
+      "name": "control_active",
+      "nullable": true
+    },
+    {
+      "arrow_type": "bool",
+      "name": "control_effect_observed",
+      "nullable": true
+    },
+    {
+      "arrow_type": "bool",
+      "name": "control_restored",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "control_service_model",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "control_service_model_id",
+      "nullable": true
+    },
+    {
+      "arrow_type": "int64",
+      "name": "control_e2_node_count",
+      "nullable": true
+    },
+    {
+      "arrow_type": "string",
+      "name": "control_data_source",
+      "nullable": true
+    },
+    {
+      "arrow_type": "timestamp[us, tz=UTC]",
+      "name": "control_source_timestamp_utc",
+      "nullable": true
+    }
+  ],
+  "format": "Apache Arrow / Parquet",
+  "release_tables": [
+    "deeporan_oai_train.parquet",
+    "deeporan_oai_validation.parquet",
+    "deeporan_oai_test.parquet"
+  ],
+  "source_partitioning": [
+    "run_id",
+    "scenario_run_id",
+    "scenario_id",
+    "slice_id"
+  ],
+  "split_unit": "scenario_run_id"
+}

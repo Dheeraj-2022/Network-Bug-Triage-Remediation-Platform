@@ -1,0 +1,14 @@
+---
+- name: Configure controller node
+  hosts: controller
+  become: true
+  roles:
+    - role: controller
+      tags: controller
+
+- name: Configure agent nodes
+  hosts: agents
+  become: true
+  roles:
+    - role: agent
+      tags: agent

@@ -1,0 +1,15 @@
+{
+  "topology_id": "lab-synthetic",
+  "label": "Synthetic lab hosts used by random fault injection",
+  "simulated": true,
+  "description": "SIMULATED inventory for the exploratory /api/inject generator (node1-node5, eth0). Peers are intentionally unknown.",
+  "hosts": [
+    {"id": "host:node1", "name": "node1", "role": "lab", "interfaces": [{"id": "iface:node1:eth0", "name": "eth0", "driver": "virtio_net", "intended_mtu": 1500, "peer": null}]},
+    {"id": "host:node2", "name": "node2", "role": "lab", "interfaces": [{"id": "iface:node2:eth0", "name": "eth0", "driver": "virtio_net", "intended_mtu": 1500, "peer": null}]},
+    {"id": "host:node3", "name": "node3", "role": "lab", "interfaces": [{"id": "iface:node3:eth0", "name": "eth0", "driver": "virtio_net", "intended_mtu": 1500, "peer": null}]},
+    {"id": "host:node4", "name": "node4", "role": "lab", "interfaces": [{"id": "iface:node4:eth0", "name": "eth0", "driver": "virtio_net", "intended_mtu": 1500, "peer": null}]},
+    {"id": "host:node5", "name": "node5", "role": "lab", "interfaces": [{"id": "iface:node5:eth0", "name": "eth0", "driver": "virtio_net", "intended_mtu": 1500, "peer": null}]}
+  ],
+  "switches": [],
+  "paths": []
+}

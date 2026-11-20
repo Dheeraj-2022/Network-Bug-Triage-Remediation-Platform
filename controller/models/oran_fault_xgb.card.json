@@ -1,0 +1,190 @@
+{
+  "name": "oran_fault_xgb",
+  "trained_at": "2026-11-20T09:44:22.936380+00:00",
+  "python": "3.11.0",
+  "artifact": "oran_fault_xgb.joblib",
+  "task": "DeepORAN row-level backhaul impairment detection (fault_active)",
+  "data": {
+    "dataset": "DeepORAN Genuine OAI RFsim Closed-Loop Telemetry (v2)",
+    "path": "C:\\Projects\\Network-Bug-Triage-Remediation-Platform\\data\\DeepOran",
+    "splits": "dataset-provided, split by scenario_run_id",
+    "rows_available": {
+      "train": 9426486,
+      "validation": 1939184,
+      "test": 1634330
+    },
+    "train_rows_used": 2000000,
+    "train_sampling": "uniform random, seed 42"
+  },
+  "features": [
+    "rx_mbps",
+    "tx_mbps",
+    "packet_loss_ratio",
+    "rtt_avg_ms",
+    "rtt_p95_ms",
+    "traffic_loss_ratio",
+    "dl_bler",
+    "ul_bler",
+    "dl_mcs",
+    "ul_mcs",
+    "ul_nprb",
+    "prb_utilization",
+    "throughput_mbps",
+    "latency_ms",
+    "slice_id",
+    "rtt_avg_ms_w64_mean",
+    "rtt_avg_ms_w64_std",
+    "latency_ms_w64_mean",
+    "latency_ms_w64_std",
+    "throughput_mbps_w64_mean",
+    "throughput_mbps_w64_std",
+    "traffic_loss_ratio_w64_mean",
+    "traffic_loss_ratio_w64_std",
+    "rx_mbps_w64_mean",
+    "rx_mbps_w64_std"
+  ],
+  "window_rows": 64,
+  "dropped_features": [
+    "in_sync",
+    "iperf_mbps",
+    "jitter_ms",
+    "rsrp_dbm"
+  ],
+  "fault_scenarios_by_split": {
+    "train": [
+      "backhaul_delay",
+      "backhaul_loss"
+    ],
+    "validation": [
+      "backhaul_delay",
+      "backhaul_loss"
+    ],
+    "test": [
+      "backhaul_delay"
+    ]
+  },
+  "best_iteration": 2,
+  "metrics": {
+    "validation_rows": {
+      "n": 1939184,
+      "positives": 307194,
+      "threshold": 0.5,
+      "accuracy": 0.8486,
+      "precision": 0.5125,
+      "recall": 0.9104,
+      "f1": 0.6558,
+      "confusion": {
+        "tn": 1365970,
+        "fp": 266020,
+        "fn": 27539,
+        "tp": 279655
+      },
+      "roc_auc": 0.9601
+    },
+    "test_rows": {
+      "n": 1634330,
+      "positives": 172037,
+      "threshold": 0.5,
+      "accuracy": 0.7934,
+      "precision": 0.2882,
+      "recall": 0.6549,
+      "f1": 0.4003,
+      "confusion": {
+        "tn": 1184007,
+        "fp": 278286,
+        "fn": 59364,
+        "tp": 112673
+      },
+      "roc_auc": 0.8174
+    },
+    "test_runs": {
+      "n": 24,
+      "positives": 3,
+      "threshold": 0.5,
+      "accuracy": 0.9583,
+      "precision": 1.0,
+      "recall": 0.6667,
+      "f1": 0.8,
+      "confusion": {
+        "tn": 21,
+        "fp": 0,
+        "fn": 1,
+        "tp": 2
+      },
+      "roc_auc": 0.8413
+    },
+    "test_by_scenario": {
+      "backhaul_delay": {
+        "rows": 172037,
+        "true_fault_rate": 1.0,
+        "predicted_fault_rate": 0.6549
+      },
+      "embb_heavy": {
+        "rows": 357087,
+        "true_fault_rate": 0.0,
+        "predicted_fault_rate": 0.2716
+      },
+      "mixed": {
+        "rows": 229229,
+        "true_fault_rate": 0.0,
+        "predicted_fault_rate": 0.2687
+      },
+      "mmtc_burst": {
+        "rows": 138866,
+        "true_fault_rate": 0.0,
+        "predicted_fault_rate": 0.0413
+      },
+      "normal": {
+        "rows": 38458,
+        "true_fault_rate": 0.0,
+        "predicted_fault_rate": 0.4618
+      },
+      "off_peak": {
+        "rows": 319758,
+        "true_fault_rate": 0.0,
+        "predicted_fault_rate": 0.0
+      },
+      "peak": {
+        "rows": 146920,
+        "true_fault_rate": 0.0,
+        "predicted_fault_rate": 0.2462
+      },
+      "prb_contention": {
+        "rows": 231975,
+        "true_fault_rate": 0.0,
+        "predicted_fault_rate": 0.2589
+      }
+    }
+  },
+  "feature_importance_gain": {
+    "latency_ms_w64_mean": 21944.68,
+    "rx_mbps": 21304.19,
+    "throughput_mbps_w64_mean": 20467.1,
+    "latency_ms": 16252.43,
+    "rtt_avg_ms_w64_mean": 13001.0,
+    "rx_mbps_w64_mean": 9479.86,
+    "slice_id": 5562.58,
+    "rx_mbps_w64_std": 5007.09,
+    "tx_mbps": 4737.8,
+    "rtt_avg_ms": 3915.19,
+    "rtt_p95_ms": 2528.19,
+    "traffic_loss_ratio_w64_mean": 2156.51,
+    "traffic_loss_ratio": 1862.75,
+    "latency_ms_w64_std": 1659.62,
+    "traffic_loss_ratio_w64_std": 1326.04,
+    "throughput_mbps_w64_std": 1083.62,
+    "rtt_avg_ms_w64_std": 647.57,
+    "ul_bler": 620.67,
+    "throughput_mbps": 267.2,
+    "dl_mcs": 108.27,
+    "ul_nprb": 105.77,
+    "prb_utilization": 10.64
+  },
+  "caveats": [
+    "RFsim software radio channel, not over-the-air RF; one testbed and one OAI commit.",
+    "Fault scenarios also use specific traffic workloads, so the model may partly learn the workload rather than the impairment; check test_by_scenario false-positive rates.",
+    "Rows within a run are temporally correlated; run-level metrics have a small denominator.",
+    "Not wired into host triage: agent events do not contain these KPIs."
+  ],
+  "train_seconds": 58.7
+}

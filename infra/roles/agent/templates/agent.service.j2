@@ -1,0 +1,14 @@
+﻿[Unit]
+Description=Network Bug Triage Agent
+After=network-online.target
+
+[Service]
+Type=simple
+Environment=PYTHONUNBUFFERED=1
+ExecStart={{ venv_dir }}/bin/python {{ project_dir }}/agent/agent.py --config {{ project_dir }}/agent/config.yaml
+WorkingDirectory={{ project_dir }}
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target

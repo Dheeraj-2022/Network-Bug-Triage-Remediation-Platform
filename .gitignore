@@ -1,0 +1,113 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+# Anchored so frontend/src/lib/ is not ignored
+/lib/
+/lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.env/
+.venv/
+myenv/
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs and databases
+*.log
+*.sqlite
+data/logs/
+data/metrics/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+*.pyc
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# ML model artifacts
+controller/models/*.joblib
+controller/models/*.pkl
+
+# Logs
+logs/
+*.log
+
+# Ansible retry files
+*.retry
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (keep sample, ignore generated)
+data/agent-queue.jsonl
+
+# Large external datasets (download separately; see README "Datasets")
+data/DeepOran/*.parquet
+data/DeepOran/*.tar.zst
+data/BGL/*.log
+data/HPC/*.log
+data/Linux/*.log
+data/OpenStack/*.log
+
+# Playwright MCP screenshots/snapshots
+.playwright-mcp/
+
+# AI layer runtime state (written by controller/ai/memory.py)
+controller/ai/store/*.json
+controller/ai/store/*.jsonl
+
+# Secrets / local env (frontend/.env is already tracked and holds only a URL)
+.env
+.env.*
+!.env.example
+*.pem
+*-credentials.json
+
+# Python tooling caches
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.ipynb_checkpoints/
+pip-wheel-metadata/
+
+# Ansible runner / Vagrant artifacts
+.vagrant/
+infra/Vagrantfile
+artifacts/
+
+# Node (root-level, if tooling is ever added)
+node_modules/

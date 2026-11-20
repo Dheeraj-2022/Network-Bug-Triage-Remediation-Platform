@@ -1,0 +1,47 @@
+# -----------------------------------------------------------------------------
+# AI subsystem configuration (LLM / multi-agent layer)
+#
+# Every value here can be overridden by an environment variable so secrets and
+# deployment-specific settings never need to be committed.
+#
+# Environment overrides:
+#   NBT_AI_ENABLED, NBT_AI_REQUIRE_APPROVAL
+#   GOOGLE_CLOUD_PROJECT / NBT_VERTEX_PROJECT, NBT_VERTEX_LOCATION,
+#   NBT_VERTEX_MODEL, NBT_VERTEX_ENABLED, GOOGLE_APPLICATION_CREDENTIALS
+# -----------------------------------------------------------------------------
+
+enabled: true
+
+# When true, AI-generated remediation plans are held in a PENDING state until a
+# human approves them via the dashboard / API. Set false for lights-out ops.
+require_human_approval: true
+
+# ML priority score above which an event is escalated from the fast XGBoost
+# classifier to the full multi-agent LLM reasoning workflow.
+escalation_priority: 0.5
+
+# --- Google Vertex AI / Gemini -------------------------------------------------
+vertex:
+  # Left disabled by default so the platform runs fully offline out of the box.
+  # Enable by setting GOOGLE_CLOUD_PROJECT (auto-enable) or NBT_VERTEX_ENABLED=1.
+  enabled: false
+  project: null
+  location: "us-central1"
+  model: "gemini-1.5-pro"
+  temperature: 0.2
+  max_output_tokens: 1024
+  credentials_path: null
+
+# --- Hybrid retrieval ----------------------------------------------------------
+retrieval:
+  top_k: 4
+  vector_weight: 0.6
+  keyword_weight: 0.4
+  # auto | chroma | faiss | numpy  (auto picks the first importable backend)
+  vector_backend: "auto"
+
+# --- Memory --------------------------------------------------------------------
+memory:
+  enabled: true
+  max_incident_history: 5000
+  max_host_history: 500
