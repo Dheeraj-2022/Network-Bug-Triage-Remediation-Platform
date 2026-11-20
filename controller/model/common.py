@@ -7,14 +7,21 @@ from datetime import datetime, timezone
 from typing import Any, Dict
 
 import numpy as np
+<<<<<<< HEAD
+=======
+from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 MODELS_DIR = os.path.join(ROOT, "controller", "models")
 
 
 def binary_metrics(y_true: np.ndarray, prob: np.ndarray, threshold: float = 0.5) -> Dict[str, Any]:
+<<<<<<< HEAD
     from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score
 
+=======
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
     y_true = np.asarray(y_true).astype(int)
     pred = (np.asarray(prob) >= threshold).astype(int)
     tn, fp, fn, tp = confusion_matrix(y_true, pred, labels=[0, 1]).ravel()

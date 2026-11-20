@@ -6,6 +6,7 @@ Defines request and response data contracts for:
 - Telemetry events & injection
 - Triage decisions & audit logging
 - AI multi-agent incident management & approval
+<<<<<<< HEAD
 - Shared remediation policy & deterministic demo
 - Secure voice-first operations assistant
 - ML model training & state reset
@@ -31,6 +32,13 @@ def _pattern_field(pattern: str, **kwargs: Any) -> Any:
 def dump_model(model: BaseModel) -> Dict[str, Any]:
     return model.model_dump() if hasattr(model, "model_dump") else model.dict()
 
+=======
+- ML model training & state reset
+"""
+
+from typing import Any, Dict, List, Literal, Optional, Union
+from pydantic import BaseModel, ConfigDict, Field
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 
 HOST_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9._-]{0,252}$"
 APPROVER_PATTERN = r"^[A-Za-z0-9][A-Za-z0-9 ._@-]{0,63}$"
@@ -58,18 +66,26 @@ class StatusResponse(BaseModel):
 # ---------------------------------------------------------------------------
 class ProcessEventRequest(BaseModel):
     event_id: Optional[str] = Field(default=None, max_length=128)
+<<<<<<< HEAD
     host: Optional[str] = _pattern_field(HOST_PATTERN, default="custom-host")
+=======
+    host: Optional[str] = Field(default="custom-host", pattern=HOST_PATTERN)
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
     ts: Optional[str] = Field(default=None, max_length=64)
     ifaces: Optional[Dict[str, Any]] = Field(default_factory=dict)
     rdma: Optional[Dict[str, Any]] = Field(default_factory=dict)
     dmesg_tail: Optional[str] = Field(default="", max_length=20000)
     sample_packets: Optional[List[Dict[str, Any]]] = Field(default_factory=list)
 
+<<<<<<< HEAD
     if _PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
     else:
         class Config:
             extra = "allow"
+=======
+    model_config = ConfigDict(extra="allow")
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 
 
 class InjectRequest(BaseModel):
@@ -110,11 +126,15 @@ class DecisionResponse(BaseModel):
     remediation: Optional[Dict[str, Any]] = None
     evidence: Optional[Dict[str, Any]] = None
 
+<<<<<<< HEAD
     if _PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
     else:
         class Config:
             extra = "allow"
+=======
+    model_config = ConfigDict(extra="allow")
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 
 
 class InjectResponse(BaseModel):
@@ -152,11 +172,15 @@ class AIStatusResponse(BaseModel):
     reason: Optional[str] = None
     error: Optional[str] = None
 
+<<<<<<< HEAD
     if _PYDANTIC_V2:
         model_config = ConfigDict(extra="allow")
     else:
         class Config:
             extra = "allow"
+=======
+    model_config = ConfigDict(extra="allow")
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 
 
 class AIIncidentSummary(BaseModel):
@@ -181,7 +205,11 @@ class AIIncidentSummary(BaseModel):
 class AIApproveRequest(BaseModel):
     incident_id: str = Field(max_length=200)
     approved: bool = True
+<<<<<<< HEAD
     approver: str = _pattern_field(APPROVER_PATTERN, default="api-user")
+=======
+    approver: str = Field(default="api-user", pattern=APPROVER_PATTERN)
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
     preview_digest: Optional[str] = Field(default=None, max_length=64)
 
 
@@ -198,7 +226,11 @@ class AIApproveResponse(BaseModel):
 # ---------------------------------------------------------------------------
 class RemediationDecisionRequest(BaseModel):
     approved: bool
+<<<<<<< HEAD
     approver: str = _pattern_field(APPROVER_PATTERN, description="Name of the person deciding (self-asserted)")
+=======
+    approver: str = Field(pattern=APPROVER_PATTERN, description="Name of the person deciding (self-asserted)")
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
     preview_digest: Optional[str] = Field(default=None, max_length=64,
                                           description="Digest of the preview that was reviewed")
     reason: Optional[str] = Field(default=None, max_length=500)
@@ -209,6 +241,7 @@ class DemoRunRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+<<<<<<< HEAD
 # Secure Voice Operations Assistant Schemas
 # ---------------------------------------------------------------------------
 class VoiceDemoSessionRequest(BaseModel):
@@ -242,6 +275,8 @@ class VoiceWalkthroughRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+=======
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 # Control & Maintenance Schemas
 # ---------------------------------------------------------------------------
 class TrainResponse(BaseModel):

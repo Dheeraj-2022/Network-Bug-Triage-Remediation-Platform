@@ -1,0 +1,30 @@
+{
+  "None::none": {
+    "total": 149,
+    "resolved": 0
+  },
+  "KERNEL_PANIC": {
+    "total": 87,
+    "resolved": 0
+  },
+  "KERNEL_PANIC::none": {
+    "total": 87,
+    "resolved": 0
+  },
+  "DRIVER_FAULT": {
+    "total": 3,
+    "resolved": 3
+  },
+  "DRIVER_FAULT::restart_driver.yml": {
+    "total": 3,
+    "resolved": 3
+  },
+  "UNKNOWN": {
+    "total": 8,
+    "resolved": 0
+  },
+  "UNKNOWN::none": {
+    "total": 8,
+    "resolved": 0
+  }
+}

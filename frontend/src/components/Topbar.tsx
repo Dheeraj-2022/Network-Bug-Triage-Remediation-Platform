@@ -126,7 +126,7 @@ const GlobalSearch: React.FC<Pick<TopbarProps, 'incidents' | 'events' | 'onOpenI
   ];
 
   return (
-    <div ref={wrapRef} style={{ position: 'relative', width: 'min(260px, 28vw)' }}>
+    <div ref={wrapRef} style={{ position: 'relative', width: 'min(272px, 30vw)', minWidth: 130, flexShrink: 1 }}>
       <div className="input-icon">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
           <circle cx="11" cy="11" r="7" />
@@ -158,7 +158,7 @@ const GlobalSearch: React.FC<Pick<TopbarProps, 'incidents' | 'events' | 'onOpenI
       </div>
       {open && q.trim() && (
         <div className="search-pop" id="global-search-results" role="listbox">
-          {results.length === 0 && <div className="search-empty">No incidents, hosts or events match “{q}”.</div>}
+          {results.length === 0 && <div className="search-empty">No incidents, hosts or events match "{q}".</div>}
           {groups.map((g) => {
             const items = results.map((r, idx) => ({ r, idx })).filter((x) => x.r.kind === g.kind);
             if (!items.length) return null;

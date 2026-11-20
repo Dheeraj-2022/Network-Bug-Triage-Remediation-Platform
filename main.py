@@ -32,7 +32,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 
 from api.routes import public_router, router as api_router
+<<<<<<< HEAD
 from api.voice_routes import voice_public_router, voice_router
+=======
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 
 # ---------------------------------------------------------------------------
 # App Initialization & Metadata
@@ -81,8 +84,11 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 app.include_router(public_router, prefix="/api")
 app.include_router(api_router, prefix="/api")
+<<<<<<< HEAD
 app.include_router(voice_public_router, prefix="/api")
 app.include_router(voice_router, prefix="/api")
+=======
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 
 # ---------------------------------------------------------------------------
 # Root / Dashboard Endpoint

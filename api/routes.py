@@ -11,7 +11,10 @@ from fastapi.responses import JSONResponse
 from api.auth import api_key_required, require_api_key
 from api.service import service
 from schemas import (
+<<<<<<< HEAD
     dump_model,
+=======
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
     AIApproveRequest,
     AIApproveResponse,
     AIIncidentSummary,
@@ -31,6 +34,7 @@ from schemas import (
 router = APIRouter(tags=["Triage API"], dependencies=[Depends(require_api_key)])
 public_router = APIRouter(tags=["Auth"])
 
+<<<<<<< HEAD
 import pydantic
 _PYDANTIC_V2 = int(pydantic.__version__.split(".", 1)[0]) >= 2
 def _path_param(pattern: str):
@@ -38,6 +42,9 @@ def _path_param(pattern: str):
 
 PROPOSAL_ID_PATH = _path_param(r"^rem-[0-9a-f]{12}$")
 TOPOLOGY_ID_PATH = _path_param(r"^[A-Za-z0-9_.-]{1,64}$")
+=======
+ProposalId = Annotated[str, Path(pattern=r"^rem-[0-9a-f]{12}$")]
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 
 
 @public_router.get("/auth", summary="Report whether an API key is required")
@@ -84,7 +91,11 @@ async def inject_events(payload: Optional[InjectRequest] = None):
 @router.post("/process", response_model=DecisionResponse, summary="Process a single custom event")
 async def process_single_event(payload: ProcessEventRequest):
     """Run the triage and remediation pipeline on a single custom telemetry event."""
+<<<<<<< HEAD
     event_dict = dump_model(payload)
+=======
+    event_dict = payload.model_dump()
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
     result = await asyncio.to_thread(service.process_single, event_dict, True)
     return result
 
@@ -168,7 +179,11 @@ async def remediation_audit(limit: int = 100, scenario_id: Optional[str] = None)
 
 
 @router.get("/remediations/{proposal_id}", summary="Get one proposal with preview, decision, execution, post-check")
+<<<<<<< HEAD
 async def get_remediation(proposal_id: str = PROPOSAL_ID_PATH):
+=======
+async def get_remediation(proposal_id: ProposalId):
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
     p = await asyncio.to_thread(service.get_remediation, proposal_id)
     if p is None:
         return JSONResponse(status_code=404, content={"error": "proposal not found"})
@@ -176,7 +191,11 @@ async def get_remediation(proposal_id: str = PROPOSAL_ID_PATH):
 
 
 @router.post("/remediations/{proposal_id}/decision", summary="Approve or reject a previewed remediation")
+<<<<<<< HEAD
 async def decide_remediation(payload: RemediationDecisionRequest, proposal_id: str = PROPOSAL_ID_PATH):
+=======
+async def decide_remediation(proposal_id: ProposalId, payload: RemediationDecisionRequest):
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
     """Approval executes in the mode bound at preview time (simulate by default), then runs the post-check.
     Duplicate, stale or changed-preview decisions return 409."""
     data, code = await asyncio.to_thread(
@@ -188,7 +207,11 @@ async def decide_remediation(payload: RemediationDecisionRequest, proposal_id: s
 
 
 @router.post("/remediations/{proposal_id}/verify", summary="Re-run the post-check with available telemetry")
+<<<<<<< HEAD
 async def verify_remediation(proposal_id: str = PROPOSAL_ID_PATH):
+=======
+async def verify_remediation(proposal_id: ProposalId):
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
     data, code = await asyncio.to_thread(service.verify_remediation, proposal_id)
     if code != 200:
         return JSONResponse(status_code=code, content=data)
@@ -219,7 +242,11 @@ async def reset_demo():
 
 
 @router.get("/topology/{topology_id}", summary="Topology nodes, links and paths")
+<<<<<<< HEAD
 async def get_topology(topology_id: str = TOPOLOGY_ID_PATH):
+=======
+async def get_topology(topology_id: Annotated[str, Path(pattern=r"^[A-Za-z0-9_.-]{1,64}$")]):
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
     view = service.policy.registry.view(topology_id)
     if view is None:
         return JSONResponse(status_code=404, content={"error": "topology not found"})

@@ -244,6 +244,7 @@ python -m controller.remediation verify <id> --samples post_samples.json
 - The key is a shared secret, and approver names are self-asserted. For anything
   beyond a local demo, put the API behind an authenticating reverse proxy/SSO.
 
+<<<<<<< HEAD
 
 ## 🎙️ Secure Voice-First Operations Assistant (Optional)
 
@@ -257,6 +258,8 @@ An optional, bounded voice/text operations assistant (`controller/voice/`, `api/
 
 See [docs/voice_assistant.md](docs/voice_assistant.md) for configuration (`NBT_VOICE_USERS_JSON`, `NBT_VOICE_AUDIT_DB`, local demo sessions) and full details.
 
+=======
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 ## 📦 Datasets
 Large datasets are **not** stored in git (see `.gitignore`); place them at these paths:
 

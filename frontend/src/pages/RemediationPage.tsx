@@ -54,7 +54,7 @@ export const RemediationPage: React.FC<Props> = ({ incidents, auditLog, remediat
           <div className="stat-value">{loaded ? rejected.length : '—'}</div>
           <div className="stat-meta">Declined or expired</div>
         </div>
-        <div className="stat" style={{ gridColumn: 'span 2' }}>
+        <div className="stat stat-wide">
           <div className="stat-label">Approval policy</div>
           <div style={{ marginTop: 4 }}>{policy}</div>
           <div className="stat-meta">

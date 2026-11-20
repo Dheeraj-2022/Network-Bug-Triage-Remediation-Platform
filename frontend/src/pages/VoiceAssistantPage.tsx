@@ -458,7 +458,7 @@ export const VoiceAssistantPage: React.FC<Props> = ({ currentPage, navigate, onC
                 <div className="row wrap" style={{ gap: 10, alignItems: 'center' }}>
                   <select
                     className="input"
-                    style={{ width: 260 }}
+                    style={{ width: 260, maxWidth: '100%' }}
                     value={selectedProfile}
                     onChange={(e) => setSelectedProfile(e.target.value as DemoProfileId)}
                     aria-label="Select local demo operator profile"
@@ -479,7 +479,7 @@ export const VoiceAssistantPage: React.FC<Props> = ({ currentPage, navigate, onC
                 <input
                   className="input mono"
                   type="password"
-                  style={{ width: 320 }}
+                  style={{ width: 320, maxWidth: '100%' }}
                   value={manualToken}
                   onChange={(e) => setManualToken(e.target.value)}
                   placeholder="Or paste configured X-Voice-Token..."
@@ -630,7 +630,7 @@ export const VoiceAssistantPage: React.FC<Props> = ({ currentPage, navigate, onC
                 <div className="row wrap" style={{ gap: 8, marginBottom: 10 }}>
                   <input
                     className="input mono"
-                    style={{ width: 200 }}
+                    style={{ width: 200, maxWidth: '100%' }}
                     value={stepUpCode}
                     onChange={(e) => setStepUpCode(e.target.value)}
                     placeholder="Senior step-up code"
@@ -638,7 +638,7 @@ export const VoiceAssistantPage: React.FC<Props> = ({ currentPage, navigate, onC
                   />
                   <input
                     className="input mono"
-                    style={{ width: 240 }}
+                    style={{ width: 240, maxWidth: '100%' }}
                     type="password"
                     value={secondApproverToken}
                     onChange={(e) => setSecondApproverToken(e.target.value)}
@@ -651,7 +651,7 @@ export const VoiceAssistantPage: React.FC<Props> = ({ currentPage, navigate, onC
               <div className="row wrap" style={{ gap: 8 }}>
                 <input
                   className="input mono"
-                  style={{ width: 200 }}
+                  style={{ width: 200, maxWidth: '100%' }}
                   value={confirmPhrase}
                   onChange={(e) => setConfirmPhrase(e.target.value)}
                   placeholder="Type 'yes confirm'"

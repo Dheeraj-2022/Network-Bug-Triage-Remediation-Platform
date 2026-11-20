@@ -147,7 +147,6 @@ export const api = {
     }),
   resetDemo: () => fetchJson<{ ok: boolean }>('/api/demo/mtu-two-host/reset', { method: 'POST' }),
 
-
   // Secure Voice Operations Assistant
   getVoiceConfig: () => fetchJson<VoiceConfig>('/api/voice/config'),
   createVoiceDemoSession: (profile: 'viewer-gpu' | 'operator-gpu' | 'operator-lab' | 'senior-approver') =>

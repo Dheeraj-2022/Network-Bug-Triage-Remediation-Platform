@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -236,12 +236,12 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             </div>
             <div style={{ fontSize: 13, fontWeight: 600, color: '#171614' }}>
               {awaiting.length} remediation {awaiting.length === 1 ? 'plan' : 'plans'} waiting for human verification:{' '}
-              <span className="mono" style={{ background: '#ffffff', padding: '1px 6px', border: '1px solid var(--warn-border)' }}>
+              <span className="mono" style={{ background: '#ffffff', padding: '2px 7px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--warn-border)' }}>
                 {awaiting[0].playbook || awaiting[0].title}
               </span>
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 3 }}>
-              {awaiting[0].summary || 'Execution is paused at the RemediationPolicy gate until an authorized operator approves.'}
+              {awaiting[0].explanation || awaiting[0].rootCause || 'Execution is paused at the RemediationPolicy gate until an authorized operator approves.'}
             </div>
           </div>
           <div className="row" style={{ gap: 8 }}>
@@ -289,7 +289,7 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             actions={
               <div className="chart-legend">
                 <span>
-                  <i className="swatch" style={{ background: '#d7d4cc' }} />
+                  <i className="swatch" style={{ background: '#cfc9be' }} />
                   No Action
                 </span>
                 <span>

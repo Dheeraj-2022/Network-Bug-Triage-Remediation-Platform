@@ -307,32 +307,32 @@ export const IncidentDetailPage: React.FC<Props> = ({ incidentKey, incidents, ev
                 {tab === 'evidence-policy' && (
                   <div className="stack">
                     {incident.decision.evidence?.mtu_checks && incident.decision.evidence.mtu_checks.length > 0 && (
-              <div className="nr-compare-grid">
-                <div className="nr-compare-box">
-                  <div className="eyebrow">EXPECTED BASELINE STATE ({incident.decision.evidence.mtu_checks[0].iface})</div>
-                  <div className="mono strong" style={{ fontSize: 24 }}>
-                    {incident.decision.evidence.mtu_checks[0].expected ?? '—'} <span style={{ fontSize: 12, fontWeight: 400 }}>BYTES</span>
-                  </div>
-                  <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>Approved topology baseline intent</div>
-                </div>
-                <div className={cx('nr-compare-box', incident.decision.evidence.mtu_checks[0].status === 'mismatch' && 'fault')}>
-                  <div className="eyebrow" style={{ color: incident.decision.evidence.mtu_checks[0].status === 'mismatch' ? 'var(--crit)' : undefined }}>
-                    OBSERVED RUNTIME STATE ({incident.decision.evidence.mtu_checks[0].status.toUpperCase()})
-                  </div>
-                  <div
-                    className="mono strong"
-                    style={{
-                      fontSize: 24,
-                      color: incident.decision.evidence.mtu_checks[0].status === 'mismatch' ? 'var(--crit)' : 'var(--ok)',
-                    }}
-                  >
-                    {incident.decision.evidence.mtu_checks[0].observed ?? '—'} <span style={{ fontSize: 12, fontWeight: 400 }}>BYTES</span>
-                  </div>
-                  <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>{incident.decision.evidence.mtu_checks[0].reason}</div>
-                </div>
-              </div>
-            )}
-            {incident.decision.evidence ? (
+                      <div className="nr-compare-grid">
+                        <div className="nr-compare-box">
+                          <div className="eyebrow">EXPECTED BASELINE STATE ({incident.decision.evidence.mtu_checks[0].iface})</div>
+                          <div className="mono strong" style={{ fontSize: 24 }}>
+                            {incident.decision.evidence.mtu_checks[0].expected ?? '—'} <span style={{ fontSize: 12, fontWeight: 400 }}>BYTES</span>
+                          </div>
+                          <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>Approved topology baseline intent</div>
+                        </div>
+                        <div className={cx('nr-compare-box', incident.decision.evidence.mtu_checks[0].status === 'mismatch' && 'fault')}>
+                          <div className="eyebrow" style={{ color: incident.decision.evidence.mtu_checks[0].status === 'mismatch' ? 'var(--crit)' : undefined }}>
+                            OBSERVED RUNTIME STATE ({incident.decision.evidence.mtu_checks[0].status.toUpperCase()})
+                          </div>
+                          <div
+                            className="mono strong"
+                            style={{
+                              fontSize: 24,
+                              color: incident.decision.evidence.mtu_checks[0].status === 'mismatch' ? 'var(--crit)' : 'var(--ok)',
+                            }}
+                          >
+                            {incident.decision.evidence.mtu_checks[0].observed ?? '—'} <span style={{ fontSize: 12, fontWeight: 400 }}>BYTES</span>
+                          </div>
+                          <div className="muted" style={{ fontSize: 11, marginTop: 4 }}>{incident.decision.evidence.mtu_checks[0].reason}</div>
+                        </div>
+                      </div>
+                    )}
+                    {incident.decision.evidence ? (
                       <EvidencePanel evidence={incident.decision.evidence} />
                     ) : (
                       <EmptyState compact title="No deterministic evidence recorded" description="This decision predates the evidence builder." />

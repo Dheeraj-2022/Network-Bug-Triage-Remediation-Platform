@@ -19,6 +19,10 @@ import logging
 import os
 from typing import Any, Dict, Optional
 
+<<<<<<< HEAD
+=======
+import joblib
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
 import numpy as np
 
 from controller.features import HOST_FEATURES, extract_host_features
@@ -41,8 +45,11 @@ class TriageModel:
         if not os.path.exists(path):
             return
         try:
+<<<<<<< HEAD
             import joblib
 
+=======
+>>>>>>> ff89564813fe8c100cd1118813d53af4264c93d6
             obj = joblib.load(path)
         except Exception:
             LOG.exception("Could not load triage model %s", path)
