@@ -29,6 +29,8 @@ from controller.rules_engine import rule_based_triage, select_playbook
 from controller.nlp_parser import LogParser
 from controller.triage_model import TriageModel
 from controller.evidence import build_evidence
+from controller.log_anomaly import get_log_anomaly_model
+from controller.model.common import load_cards
 from controller.remediation import RemediationPolicy, get_policy, summarize
 from controller.remediation.candidates import build_candidates
 from controller.demo_scenarios import MTU_SCENARIO_ID, POST_CHECK_VARIANTS, load_mtu_two_host
@@ -191,6 +193,9 @@ class TriageService:
             rule=rule,
             log_class=log_class,
         )
+        log_anomaly = get_log_anomaly_model().score(dmesg)
+        if log_anomaly:
+            evidence["model_signals"] = [log_anomaly]
 
         decision: Dict[str, Any] = {
             "ts": iso_now(),
@@ -201,6 +206,9 @@ class TriageService:
             "log_class": log_class,
             "ml_priority": round(ml_result.get("priority_score", 0), 4),
             "ml_localization": ml_result.get("localization"),
+            "ml_model": ml_result.get("model"),
+            "log_anomaly": ({k: log_anomaly[k] for k in ("max_score", "flagged", "model", "label")}
+                            if log_anomaly else None),
             "remediate": should_remediate,
             "playbook": playbook,
             "simulated": bool(event.get("simulated")),
@@ -488,6 +496,18 @@ class TriageService:
     def get_audit(self, limit: int = 50) -> List[Dict[str, Any]]:
         with self._lock:
             return self._audit_log[-limit:]
+
+    def get_models(self) -> Dict[str, Any]:
+        """Runtime status of each model plus its training card (metrics, data, caveats)."""
+        cards = load_cards()
+        return {
+            "host_triage": {"runtime_status": self.get_triage_model().status, "used_at_runtime": True,
+                            "card": cards.get("xgb_model")},
+            "log_anomaly": {"runtime_status": get_log_anomaly_model().status, "used_at_runtime": True,
+                            "card": cards.get("log_anomaly_xgb")},
+            "oran_fault": {"runtime_status": "offline" if cards.get("oran_fault_xgb") else "not_trained",
+                           "used_at_runtime": False, "card": cards.get("oran_fault_xgb")},
+        }
 
     def get_ai_status(self) -> Tuple[Dict[str, Any], int]:
         orchestrator = self.get_orchestrator()

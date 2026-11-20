@@ -234,6 +234,7 @@ export interface Evidence {
     model_reported_confidence?: number;
     note: string;
   } | null;
+  model_signals?: LogAnomalySignal[];
 }
 
 // ---------------------------------------------------------------------------
@@ -384,6 +385,26 @@ export interface AuthInfo {
   remediation_mode: string;
   note: string;
 }
+
+export interface LogAnomalySignal {
+  label: 'model-generated';
+  model: string;
+  trained_on: string;
+  max_score: number;
+  threshold: number;
+  flagged: boolean;
+  top_line: string;
+  lines: { line: string; score: number }[];
+  note: string;
+}
+
+export interface ModelInfo {
+  runtime_status: string;
+  used_at_runtime: boolean;
+  card: Record<string, any> | null;
+}
+
+export type ModelsResponse = Record<string, ModelInfo>;
 
 export interface AIStatus {
   enabled: boolean;

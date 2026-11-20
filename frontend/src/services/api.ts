@@ -15,6 +15,7 @@ import {
   AuthInfo,
   Decision,
   DemoState,
+  ModelsResponse,
   RemediationProposal,
   SystemStatus,
   TelemetryEvent,
@@ -134,6 +135,7 @@ export const api = {
   resetDemo: () => fetchJson<{ ok: boolean }>('/api/demo/mtu-two-host/reset', { method: 'POST' }),
 
   // Engine Maintenance
+  getModels: () => fetchJson<ModelsResponse>('/api/models'),
   trainModel: () =>
     fetchJson<{ ok: boolean; message?: string; error?: string }>('/api/train', {
       method: 'POST',

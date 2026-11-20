@@ -1,0 +1,59 @@
+{
+  "name": "xgb_model",
+  "trained_at": "2026-11-20T09:34:50.532220+00:00",
+  "python": "3.11.0",
+  "artifact": "xgb_model.joblib",
+  "task": "host event fault vs normal (priority_score = P(fault))",
+  "data": {
+    "type": "synthetic",
+    "generator": "controller.model.triage_model_training",
+    "seed": 42,
+    "label_noise": 0.02
+  },
+  "features": [
+    "iface_count",
+    "rx_bytes_log",
+    "tx_bytes_log",
+    "errin_sum",
+    "errout_sum",
+    "iface_err_max",
+    "mtu_min",
+    "mtu_max",
+    "mtu_nonstandard",
+    "qp_errors",
+    "rq_errors",
+    "log_mtu",
+    "log_rdma",
+    "log_driver",
+    "log_panic",
+    "log_link"
+  ],
+  "rows": {
+    "train": 4200,
+    "validation": 900,
+    "test": 900
+  },
+  "best_iteration": 65,
+  "metrics": {
+    "test": {
+      "n": 900,
+      "positives": 665,
+      "threshold": 0.5,
+      "accuracy": 0.9622,
+      "precision": 0.9773,
+      "recall": 0.9714,
+      "f1": 0.9744,
+      "confusion": {
+        "tn": 220,
+        "fp": 15,
+        "fn": 19,
+        "tp": 646
+      },
+      "roc_auc": 0.9562
+    }
+  },
+  "caveats": [
+    "Trained on synthetic events: metrics measure agreement with the generator, not real-world accuracy.",
+    "Used only as a triage priority signal; every remediation still goes through the shared policy and human approval."
+  ]
+}

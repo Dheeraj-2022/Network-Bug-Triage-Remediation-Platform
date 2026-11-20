@@ -9,6 +9,9 @@ if ROOT not in sys.path:
 
 os.environ.setdefault("NBT_DISABLE_EMBEDDINGS", "1")
 os.environ.setdefault("NBT_AI_ENABLED", "0")
+# Trained artifacts in controller/models must not change golden/policy expectations.
+os.environ.setdefault("NBT_TRIAGE_MODEL_PATH", "none")
+os.environ.setdefault("NBT_LOG_ANOMALY_MODEL_PATH", "none")
 
 
 def make_registry():

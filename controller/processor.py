@@ -41,6 +41,7 @@ from controller.rules_engine import rule_based_triage
 from controller.nlp_parser import LogParser
 from controller.triage_model import TriageModel
 from controller.evidence import build_evidence
+from controller.log_anomaly import get_log_anomaly_model
 from controller.remediation import RemediationPolicy, summarize
 from controller.remediation.candidates import build_candidates
 
@@ -251,6 +252,9 @@ class Processor:
 
         evidence = build_evidence(event, self.policy.registry, previous=previous, peer_samples=peers,
                                   rule=rule, log_class=log_class)
+        log_anomaly = get_log_anomaly_model().score(dmesg)
+        if log_anomaly:
+            evidence["model_signals"] = [log_anomaly]
         decision = {"ts": iso_now(), "host": event.get("host"), "event_id": event.get("event_id"),
                     "rule": rule, "log_class": log_class, "ml": ml_result, "correlation": corr,
                     "evidence": evidence}

@@ -244,11 +244,47 @@ python -m controller.remediation verify <id> --samples post_samples.json
 - The key is a shared secret, and approver names are self-asserted. For anything
   beyond a local demo, put the API behind an authenticating reverse proxy/SSO.
 
+## 📦 Datasets
+Large datasets are **not** stored in git (see `.gitignore`); place them at these paths:
+
+| Path | Dataset | Used for |
+|------|---------|----------|
+| `data/DeepOran/deeporan_oai_{train,validation,test}.parquet` | DeepORAN Genuine OAI RFsim Closed-Loop Telemetry v2 (Kaggle) | `oran_fault_xgb` (offline model) |
+| `data/BGL/BGL.log` | BGL, loghub (per-line alert labels) | `log_anomaly_xgb` |
+| `data/HPC/HPC.log`, `data/Linux/Linux.log`, `data/OpenStack/*.log` | loghub | Not used for training: no per-line labels in this form |
+| `data/sample_events.json`, `data/eval_labeled.json` | Synthetic platform fixtures | Sample replay, AI evaluation |
+
+`data/DeepOran/sample_events.json`, `eval_labeled.json` and `agent-queue.jsonl`
+are copies of the platform fixtures, not part of DeepORAN; the code reads the
+copies in `data/`.
+
+## 🤖 Models
+| Model | Train command | Data | Used at runtime |
+|-------|---------------|------|-----------------|
+| `xgb_model` (host triage) | `python -m controller.model.triage_model_training` (also `POST /api/train`) | Seeded **synthetic** generator; `--events file.json` for your own labelled events | Yes: `ml_priority` (ML candidates still go through the policy) |
+| `log_anomaly_xgb` | `python -m controller.model.log_anomaly_training` | BGL, chronological 72/8/20 split, message text only | Yes: model-generated `log_anomaly` signal shown with evidence; never drives remediation |
+| `oran_fault_xgb` | `python -m controller.model.oran_fault_training` | DeepORAN, dataset run-level splits, 2M-row train sample, trailing-window KPI features | No: agent events don't carry these KPIs (offline evaluation only) |
+
+Artifacts and model cards (metrics with denominators, data provenance, caveats)
+are written to `controller/models/`; `GET /api/models` and the *Analysis engine*
+page show them. The host model stores its feature list, and an artifact with a
+different layout is refused instead of being applied. Set
+`NBT_TRIAGE_MODEL_PATH=none` / `NBT_LOG_ANOMALY_MODEL_PATH=none` to disable a model.
+
+Results from the run on 2026-11-20 (the model cards record current values):
+- Host triage, synthetic: test F1 0.974 (n=900). This measures agreement with the generator, not real-world accuracy.
+- BGL log anomaly: test-line F1 0.928 (n=920,196; 46,283 alerts), but only **F1 0.46 (recall 0.30, n=1,700)
+  on test messages never seen in training**. On Linux dmesg lines the scores are low across the board (domain gap).
+- DeepORAN impairment: test rows ROC-AUC 0.817, F1 0.40 (n=1,634,330; 172,037 fault rows). Run level:
+  23/24 runs correct (2 of 3 faulted runs detected, 0 false alarms). The test split contains only `backhaul_delay` faults,
+  and some per-scenario false-positive rates are high (see card).
+
 ## ✅ Validation commands
 ```powershell
 $env:NBT_DISABLE_EMBEDDINGS="1"   # skip sentence-transformers model load (faster, offline)
-python -m unittest tests.test_remediation_policy tests.test_golden_scenarios tests.test_api_demo -v
+python -m unittest tests.test_models tests.test_remediation_policy tests.test_golden_scenarios tests.test_api_demo -v
 python -m tests.test_golden_scenarios          # scenario report with per-dimension n/N
+python -m tests.smoke_e2e                      # whole API with the trained models (temporary remediation DB)
 python -m tests.test_ai_layer                  # note: appends to controller/ai/store (git-ignored runtime state)
 python -m tests.validate_pipeline --mode dry --count 4
 cd frontend; npm run build; npm run lint

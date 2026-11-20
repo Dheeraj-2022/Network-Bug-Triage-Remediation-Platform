@@ -1,153 +1,134 @@
-# triage_model_training.py
-
+#!/usr/bin/env python3
 """
-Triage Model Training Script
+Host triage model training (XGBoost).
 
-This script trains the ML triage engine for the Network Bug Triage & Remediation Platform.
+There is no labelled host-telemetry dataset in this repository whose schema
+matches the agent events (iface errin/errout/mtu, RDMA qp_errors, dmesg), so by
+default the model is trained on a seeded synthetic generator. Its metrics only
+show that the pipeline learns the generator's rules; they are NOT real-world
+accuracy. Pass ``--events`` with a JSON list of real agent events carrying a
+``label`` (0 = normal, 1 = fault) to train on your own data instead.
 
-Steps:
-1. Load or generate synthetic telemetry events (data/sample_events.json).
-2. Extract features: interface stats, RDMA counters, dmesg log embeddings.
-3. Train an XGBoost classifier to detect and localize faults.
-4. Evaluate accuracy.
-5. Save model (controller/models/xgb_model.joblib).
+    python -m controller.model.triage_model_training
+    python -m controller.model.triage_model_training --events my_labelled_events.json
 """
 
-import os
+import argparse
 import json
+import os
 import random
-import numpy as np
+from typing import Any, Dict, List, Optional
+
 import joblib
+import numpy as np
 import xgboost as xgb
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
 
-try:
-    from sentence_transformers import SentenceTransformer
-    embed_model = SentenceTransformer("all-MiniLM-L6-v2")
-except Exception:
-    embed_model = None
+from controller.features import HOST_FEATURES, extract_host_features
+from controller.model.common import MODELS_DIR, binary_metrics, write_card
 
-# Paths
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-DATA_PATH = os.path.join(ROOT, "data", "sample_events.json")
-MODEL_PATH = os.path.join(ROOT, "controller", "models", "xgb_model.joblib")
+MODEL_PATH = os.path.join(MODELS_DIR, "xgb_model.joblib")
+SEED = 42
+
+_BENIGN_LOGS = ["", "Normal boot messages", "eth0: link is up 25000 Mbps full duplex",
+                "systemd[1]: Started Session 3 of user root.", "IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready"]
 
 
-# --------------------------
-# Generate Synthetic Events
-# --------------------------
-def generate_synthetic_events(n=200):
-    hosts = [f"node{i+1}" for i in range(5)]
-    fault_types = ["MTU_MISMATCH", "IFACE_ERROR", "RDMA_QP", "DRIVER_OOPS", "NORMAL"]
+def generate_synthetic_events(n: int = 6000, seed: int = SEED, label_noise: float = 0.02) -> List[Dict[str, Any]]:
+    rng = random.Random(seed)
     events = []
     for i in range(n):
-        host = random.choice(hosts)
-        fault = random.choice(fault_types)
-        ifaces = {
-            "eth0": {
-                "rx_bytes": random.randint(1e3, 1e6),
-                "tx_bytes": random.randint(1e3, 1e6),
-                "errin": 0,
-                "errout": 0,
-                "mtu": 1500,
-            }
-        }
-        rdma = {"qp_errors": 0}
-        dmesg = "normal boot"
-        label = "none"
-
+        nics = ["eth0"] + (["eth1"] if rng.random() < 0.3 else [])
+        base_mtu = rng.choice([1500, 1500, 9000])
+        ifaces = {nic: {"rx_bytes": rng.randint(10**3, 10**9), "tx_bytes": rng.randint(10**3, 10**9),
+                        "errin": rng.choice([0, 0, 0, 1, 2]), "errout": rng.choice([0, 0, 0, 1]), "mtu": base_mtu}
+                  for nic in nics}
+        rdma = {"qp_errors": 0, "rq_errors": 0}
+        dmesg = rng.choice(_BENIGN_LOGS)
+        fault = rng.choice(["NORMAL", "NORMAL", "IFACE_ERROR", "MTU", "RDMA", "DRIVER", "LINK", "PANIC"])
+        nic = nics[0]
         if fault == "IFACE_ERROR":
-            ifaces["eth0"]["errout"] = random.randint(5, 20)
-            dmesg = "eth0: TX errors detected"
-            label = host
-        elif fault == "MTU_MISMATCH":
-            ifaces["eth0"]["mtu"] = random.choice([1400, 9000])
-            dmesg = "MTU mismatch detected"
-            label = host
-        elif fault == "RDMA_QP":
-            rdma["qp_errors"] = random.randint(1, 5)
-            dmesg = "mlx5_core: qp error"
-            label = host
-        elif fault == "DRIVER_OOPS":
-            dmesg = "kernel oops - stack trace"
-            label = host
-
-        events.append(
-            {"host": host, "ifaces": ifaces, "rdma": rdma, "dmesg_tail": dmesg, "label": label}
-        )
+            ifaces[nic]["errout"] = rng.randint(5, 500)
+            dmesg = rng.choice([f"{nic}: TX errors detected", ""])
+        elif fault == "MTU":
+            ifaces[nic]["mtu"] = rng.choice([1400, 4200, 9216, 1500 if base_mtu == 9000 else 9000])
+            ifaces[nic]["errin"] = rng.randint(0, 300)
+            dmesg = rng.choice([f"{nic}: MTU mismatch detected", f"{nic}: frame length exceeds MTU", ""])
+        elif fault == "RDMA":
+            rdma["qp_errors"] = rng.randint(1, 20)
+            dmesg = rng.choice(["mlx5_core: RDMA QP reset or qp error", "infiniband mlx5_0: retry exceeded", ""])
+        elif fault == "DRIVER":
+            dmesg = rng.choice(["driver: kernel oops - stack trace", "mlx5_core: firmware fatal error"])
+            ifaces[nic]["errout"] = rng.randint(0, 50)
+        elif fault == "LINK":
+            dmesg = f"{nic}: link is down"
+            ifaces[nic]["errin"] = rng.randint(0, 40)
+        elif fault == "PANIC":
+            dmesg = "Kernel panic - not syncing: Fatal exception"
+        label = 0 if fault == "NORMAL" else 1
+        if rng.random() < label_noise:
+            label = 1 - label
+        events.append({"event_id": f"synthetic-train-{i}", "host": f"node{rng.randint(1, 5)}", "ifaces": ifaces,
+                       "rdma": rdma, "dmesg_tail": dmesg, "label": label, "fault": fault})
     return events
 
 
-# --------------------------
-# Feature Extraction
-# --------------------------
-def featurize(events):
-    if embed_model:
-        _embed = embed_model
+def train_model(events_path: Optional[str] = None) -> str:
+    """Train the host triage model. Returns a one-line summary (used by /api/train)."""
+    if events_path:
+        with open(events_path, encoding="utf-8") as fh:
+            events = [e for e in json.load(fh) if isinstance(e, dict) and e.get("label") in (0, 1)]
+        if len(events) < 50:
+            raise ValueError(f"{events_path}: need >= 50 events with label 0/1, found {len(events)}")
+        source = {"type": "user-labelled", "path": events_path}
     else:
-        _embed = None
-    X, y = [], []
-    for ev in events:
-        iface = ev["ifaces"]["eth0"]
-        feat = [
-            iface["rx_bytes"],
-            iface["tx_bytes"],
-            iface["errin"],
-            iface["errout"],
-            iface["mtu"],
-            ev["rdma"]["qp_errors"],
-        ]
-        text = ev.get("dmesg_tail", "")
-        if _embed:
-            emb = _embed.encode([text])[0]
-        else:
-            emb = np.array([hash(text) % 100 / 100.0] * 16)
-        feat = np.concatenate([np.array(feat), np.array(emb)])
-        X.append(feat)
-        y.append(0 if ev["label"] == "none" else 1)
-    return np.vstack(X), np.array(y)
+        events = generate_synthetic_events()
+        source = {"type": "synthetic", "generator": "controller.model.triage_model_training", "seed": SEED,
+                  "label_noise": 0.02}
+
+    X = np.vstack([extract_host_features(e) for e in events])
+    y = np.array([int(e["label"]) for e in events])
+    X_tr, X_tmp, y_tr, y_tmp = train_test_split(X, y, test_size=0.3, random_state=SEED, stratify=y)
+    X_va, X_te, y_va, y_te = train_test_split(X_tmp, y_tmp, test_size=0.5, random_state=SEED, stratify=y_tmp)
+
+    params = {"objective": "binary:logistic", "eval_metric": "logloss", "max_depth": 4, "eta": 0.1,
+              "subsample": 0.9, "colsample_bytree": 0.9, "seed": SEED}
+    dtr = xgb.DMatrix(X_tr, label=y_tr, feature_names=HOST_FEATURES)
+    dva = xgb.DMatrix(X_va, label=y_va, feature_names=HOST_FEATURES)
+    bst = xgb.train(params, dtr, num_boost_round=300, evals=[(dva, "validation")],
+                    early_stopping_rounds=20, verbose_eval=False)
+    prob = bst.predict(xgb.DMatrix(X_te, feature_names=HOST_FEATURES),
+                       iteration_range=(0, bst.best_iteration + 1))
+    test = binary_metrics(y_te, prob)
+
+    card = {
+        "artifact": os.path.basename(MODEL_PATH),
+        "task": "host event fault vs normal (priority_score = P(fault))",
+        "data": source,
+        "features": HOST_FEATURES,
+        "rows": {"train": int(len(y_tr)), "validation": int(len(y_va)), "test": int(len(y_te))},
+        "best_iteration": int(bst.best_iteration),
+        "metrics": {"test": test},
+        "caveats": ([
+            "Trained on synthetic events: metrics measure agreement with the generator, not real-world accuracy.",
+            "Used only as a triage priority signal; every remediation still goes through the shared policy "
+            "and human approval.",
+        ] if source["type"] == "synthetic" else [
+            "Random split of user-provided events; check for temporal/host leakage before trusting metrics."]),
+    }
+    os.makedirs(MODELS_DIR, exist_ok=True)
+    joblib.dump({"booster": bst, "features": HOST_FEATURES, "card": card}, MODEL_PATH)
+    write_card("xgb_model", card)
+    return (f"Host triage model ({source['type']} data): test F1={test['f1']} on {test['n']} events "
+            f"({test['positives']} faults). Saved {MODEL_PATH}.")
 
 
-def train_model():
-    """Train the XGBoost triage model. Returns a summary string."""
-    # Load or generate events
-    if os.path.exists(DATA_PATH):
-        with open(DATA_PATH) as f:
-            events = json.load(f)
-    else:
-        events = generate_synthetic_events(300)
-        os.makedirs(os.path.dirname(DATA_PATH), exist_ok=True)
-        with open(DATA_PATH, "w") as f:
-            json.dump(events, f, indent=2)
-
-    print(f"Loaded {len(events)} events.")
-
-    X, y = featurize(events)
-    print("Feature matrix shape:", X.shape, "Labels shape:", y.shape)
-
-    # Train
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    dtrain = xgb.DMatrix(X_train, label=y_train)
-    dtest = xgb.DMatrix(X_test, label=y_test)
-
-    params = {"objective": "binary:logistic", "eval_metric": "logloss"}
-    bst = xgb.train(params, dtrain, num_boost_round=50, evals=[(dtest, "test")], verbose_eval=False)
-
-    # Evaluate
-    preds = (bst.predict(dtest) > 0.5).astype(int)
-    report = classification_report(y_test, preds)
-    print("\nClassification Report:")
-    print(report)
-
-    # Save
-    os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
-    joblib.dump(bst, MODEL_PATH)
-    print("Saved model to", MODEL_PATH)
-
-    acc = (preds == y_test).mean()
-    return f"Accuracy={acc:.2%} on {len(X_test)} test samples. Model saved."
+def main() -> None:
+    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--events", help="JSON list of agent events with label 0/1 (default: synthetic generator)")
+    args = p.parse_args()
+    print(train_model(args.events))
 
 
 if __name__ == "__main__":
-    train_model()
+    main()

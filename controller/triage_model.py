@@ -3,79 +3,79 @@
 ML Triage Engine
 ----------------
 
-Implements an XGBoost classifier for network issue triage.
-- Input: Telemetry features (iface stats + RDMA + log embeddings)
-- Output: Predicted issue localization + priority score
+Loads the XGBoost host-triage model trained by
+``controller/model/triage_model_training.py`` and scores one telemetry event.
 
-Model training is handled in `notebooks/triage_training.ipynb`
-This file only loads and applies the trained model.
+- Input: the fixed-length host feature vector from ``controller.features``.
+- Output: ``priority_score`` = model probability that the event is a fault,
+  plus ``localization`` (the event host).
+
+The model artifact stores its feature names; an artifact trained on a different
+feature layout is refused (fallback score 0.1) instead of being mis-applied.
+Set ``NBT_TRIAGE_MODEL_PATH=none`` to disable the model (deterministic tests).
 """
 
+import logging
 import os
-import numpy as np
+from typing import Any, Dict, Optional
+
 import joblib
-from typing import Dict, Any
+import numpy as np
+
+from controller.features import HOST_FEATURES, extract_host_features
+
+LOG = logging.getLogger("nbt.triage_model")
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "models", "xgb_model.joblib")
+FALLBACK_SCORE = 0.1
 
 
 class TriageModel:
-    def __init__(self, model_path: str = MODEL_PATH):
-        if os.path.exists(model_path):
-            self.model = joblib.load(model_path)
-        else:
-            self.model = None
-
-    def extract_features(self, event: Dict[str, Any], log_embedding: np.ndarray) -> np.ndarray:
-        """Convert event + log embedding into ML feature vector."""
-        iface_stats = []
-        for nic, stats in event.get("ifaces", {}).items():
-            iface_stats.extend([
-                int(stats.get("rx_bytes", 0)),
-                int(stats.get("tx_bytes", 0)),
-                int(stats.get("errin", 0)),
-                int(stats.get("errout", 0)),
-                int(stats.get("mtu", 1500)),
-            ])
-        rdma = event.get("rdma", {})
-        rdma_stats = [int(rdma.get("qp_errors", 0)), int(rdma.get("rq_errors", 0))]
-        return np.concatenate([iface_stats, rdma_stats, log_embedding])
-
-    def predict(self, event: Dict[str, Any], log_embedding: np.ndarray) -> Dict[str, Any]:
-        if not self.model:
-            return {"priority_score": 0.1, "localization": event.get("host", "unknown")}
+    def __init__(self, model_path: Optional[str] = None):
+        path = model_path or os.environ.get("NBT_TRIAGE_MODEL_PATH") or MODEL_PATH
+        self.model = None
+        self.card: Dict[str, Any] = {}
+        self.status = "not_trained"
+        if path.lower() == "none":
+            self.status = "disabled"
+            return
+        if not os.path.exists(path):
+            return
         try:
-            X = self.extract_features(event, log_embedding).reshape(1, -1)
-            # scikit-learn style estimators (XGBClassifier) expose predict_proba.
-            if hasattr(self.model, "predict_proba"):
-                prob = self.model.predict_proba(X)[0].max()
-                label = self.model.predict(X)[0]
-                return {"priority_score": float(prob), "localization": str(label)}
-            # Raw xgboost Booster: predict() returns the positive-class
-            # probability for a binary:logistic objective.
-            if hasattr(self.model, "predict"):
-                try:
-                    import xgboost as xgb  # local import; optional dep
-
-                    dmatrix = xgb.DMatrix(X)
-                    raw = self.model.predict(dmatrix)
-                except Exception:
-                    raw = self.model.predict(X)
-                score = float(np.asarray(raw).ravel()[0])
-                return {
-                    "priority_score": score,
-                    "localization": event.get("host", "unknown"),
-                }
+            obj = joblib.load(path)
         except Exception:
-            # Never let a model/feature-shape mismatch break the pipeline; fall
-            # back to a low-priority default so downstream logic still runs.
-            pass
-        return {"priority_score": 0.1, "localization": event.get("host", "unknown")}
+            LOG.exception("Could not load triage model %s", path)
+            self.status = "load_error"
+            return
+        if isinstance(obj, dict) and obj.get("features") == HOST_FEATURES:
+            self.model = obj["booster"]
+            self.card = obj.get("card", {})
+            self.status = "loaded"
+        else:
+            LOG.warning("Triage model %s has an incompatible feature layout; retrain with "
+                        "python -m controller.model.triage_model_training", path)
+            self.status = "incompatible"
+
+    def extract_features(self, event: Dict[str, Any], log_embedding: Any = None) -> np.ndarray:
+        return extract_host_features(event)
+
+    def predict(self, event: Dict[str, Any], log_embedding: Any = None) -> Dict[str, Any]:
+        host = event.get("host", "unknown")
+        if self.model is None:
+            return {"priority_score": FALLBACK_SCORE, "localization": host, "model": self.status}
+        try:
+            import xgboost as xgb
+
+            X = xgb.DMatrix(self.extract_features(event).reshape(1, -1), feature_names=HOST_FEATURES)
+            score = float(np.asarray(self.model.predict(X)).ravel()[0])
+            return {"priority_score": score, "localization": host, "model": "xgb-host"}
+        except Exception:
+            LOG.exception("Triage model prediction failed; using fallback score")
+            return {"priority_score": FALLBACK_SCORE, "localization": host, "model": "error"}
 
 
 # Self-test
 if __name__ == "__main__":
     model = TriageModel()
     fake_event = {"host": "vm-01", "ifaces": {"eth0": {"rx_bytes": 1000, "errin": 10, "errout": 2}}, "rdma": {"qp_errors": 1}}
-    fake_emb = np.random.rand(384)
-    print(model.predict(fake_event, fake_emb))
+    print(model.status, model.predict(fake_event))

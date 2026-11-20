@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Badge, Banner, EmptyState, PageHeader, Panel, StatusDot } from '../components/ui';
+import { ModelsPanel } from '../components/ModelsPanel';
 import { countBy, Incident } from '../lib/incidents';
 import { domainLabel, formatNumber, formatPct, formatSeconds } from '../lib/format';
 import { AIStatus, SystemStatus } from '../types';
@@ -46,9 +47,11 @@ export const AiAnalysisPage: React.FC<Props> = ({ aiStatus, status, incidents, o
       {aiStatus && !aiStatus.enabled && (
         <Banner tone={aiStatus.error ? 'crit' : 'warn'} title="Multi-agent analysis is disabled">
           {aiStatus.error || aiStatus.reason || 'The orchestrator is not available.'} Incidents are raised by the rules engine and ML
-          triage only; no root-cause analysis or approval gate is applied.
+          triage only; no model-generated root-cause analysis is produced. The remediation approval gate still applies.
         </Banner>
       )}
+
+      <ModelsPanel />
 
       <div className="grid-2">
         <Panel

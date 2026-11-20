@@ -286,6 +286,13 @@ export const EvidencePanel: React.FC<{ evidence: Evidence }> = ({ evidence: ev }
         </div>
       </Section>
 
+      {(ev.model_signals ?? []).map((s, i) => (
+        <Banner key={i} tone={s.flagged ? 'warn' : 'info'} title={`Model-generated log anomaly score: ${s.max_score.toFixed(2)} (${s.model}, trained on ${s.trained_on})`}>
+          <div className="mono">{s.top_line}</div>
+          <p className="muted">{s.note}</p>
+        </Banner>
+      ))}
+
       {ev.model_explanation && (
         <Banner title={`Model-generated explanation (${ev.model_explanation.backend || 'AI layer'})`}>
           <p>{ev.model_explanation.explanation || ev.model_explanation.root_cause}</p>

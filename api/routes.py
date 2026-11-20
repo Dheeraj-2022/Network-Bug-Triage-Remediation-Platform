@@ -224,11 +224,16 @@ async def get_topology(topology_id: Annotated[str, Path(pattern=r"^[A-Za-z0-9_.-
 # ---------------------------------------------------------------------------
 @router.post("/train", response_model=TrainResponse, summary="Trigger ML model training")
 async def train_model():
-    """Trigger retraining of the XGBoost triage classifier."""
+    """Retrain the host triage XGBoost model (synthetic data unless trained via the CLI with --events)."""
     data, code = await asyncio.to_thread(service.train_model)
     if code != 200:
         return JSONResponse(status_code=code, content=data)
     return data
+
+
+@router.get("/models", summary="Trained model status, metrics and caveats")
+async def get_models():
+    return await asyncio.to_thread(service.get_models)
 
 
 @router.post("/clear", response_model=ClearResponse, summary="Clear in-memory state")

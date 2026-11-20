@@ -19,6 +19,7 @@ pandas
 scikit-learn
 xgboost
 joblib
+pyarrow                     # reads the DeepORAN Parquet splits (controller/model/oran_fault_training.py)
 
 # NLP
 sentence-transformers       

@@ -1,0 +1,68 @@
+{
+  "name": "log_anomaly_xgb",
+  "trained_at": "2026-11-20T09:41:22.231294+00:00",
+  "python": "3.11.0",
+  "artifact": "log_anomaly_xgb.joblib",
+  "task": "log line alert vs non-alert (message text only)",
+  "data": {
+    "dataset": "BGL (loghub)",
+    "path": "C:\\Projects\\Network-Bug-Triage-Remediation-Platform\\data\\BGL\\BGL.log",
+    "lines_used": 4747963,
+    "split": "chronological by file order: 72% train / 8% validation / 20% test",
+    "unique_messages": {
+      "train": 16081,
+      "validation": 4522,
+      "test": 3168
+    },
+    "alert_lines": {
+      "train": 288793,
+      "validation": 13384,
+      "test": 46283
+    }
+  },
+  "features": "HashingVectorizer(2^18, word 1-2 grams) over normalized message text",
+  "normalizer_version": 1,
+  "best_iteration": 19,
+  "metrics": {
+    "test_lines": {
+      "n": 920196,
+      "positives": 46283,
+      "threshold": 0.5,
+      "accuracy": 0.9932,
+      "precision": 0.9979,
+      "recall": 0.8675,
+      "f1": 0.9282,
+      "confusion": {
+        "tn": 873830,
+        "fp": 83,
+        "fn": 6132,
+        "tp": 40151
+      },
+      "roc_auc": 0.9793
+    },
+    "test_unseen_messages": {
+      "n": 1700,
+      "positives": 66,
+      "threshold": 0.5,
+      "accuracy": 0.9724,
+      "precision": 0.9524,
+      "recall": 0.303,
+      "f1": 0.4598,
+      "confusion": {
+        "tn": 1633,
+        "fp": 1,
+        "fn": 46,
+        "tp": 20
+      },
+      "roc_auc": 0.9687
+    },
+    "test_unseen_message_count": 1700
+  },
+  "caveats": [
+    "BGL alert tags label whole messages; many test lines repeat training messages, so per-line scores are optimistic. test_unseen_messages is the better generalization estimate.",
+    "BlueGene/L RAS logs differ from Linux dmesg; scores on host events are indicative only.",
+    "Model output is displayed as a model-generated signal and is not used by the remediation policy.",
+    "HPC, Linux and OpenStack logs in data/ were not used: they have no per-line labels in this form."
+  ],
+  "train_seconds": 57.8
+}
